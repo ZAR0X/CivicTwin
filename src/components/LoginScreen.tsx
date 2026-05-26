@@ -121,18 +121,24 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
       />
 
       {/* Decorative Blur Orbs */}
-      <View style={[styles.glowBlob, { 
-        top: '10%', 
-        right: '-10%', 
-        backgroundColor: colors.accentOrange, 
-        opacity: isDark ? 0.15 : 0.1 
-      }]} />
-      <View style={[styles.glowBlob, { 
-        bottom: '30%', 
-        left: '-10%', 
-        backgroundColor: colors.electricAqua, 
-        opacity: isDark ? 0.2 : 0.15 
-      }]} />
+      <View 
+        pointerEvents="none"
+        style={[styles.glowBlob, { 
+          top: '10%', 
+          right: '-10%', 
+          backgroundColor: colors.accentOrange, 
+          opacity: isDark ? 0.15 : 0.1 
+        }]} 
+      />
+      <View 
+        pointerEvents="none"
+        style={[styles.glowBlob, { 
+          bottom: '30%', 
+          left: '-10%', 
+          backgroundColor: colors.electricAqua, 
+          opacity: isDark ? 0.2 : 0.15 
+        }]} 
+      />
 
       {/* Theme Switcher Button */}
       <TouchableOpacity 

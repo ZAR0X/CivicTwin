@@ -285,8 +285,18 @@ export default function HomeScreen() {
       {/* Sleek Floating Top Search Bar (Matches Screenshot Widget Layout) */}
       <SafeAreaView style={styles.topOverlay}>
         <View style={styles.topContainer}>
-          <View style={[styles.searchBar, { backgroundColor: colors.cardBg, borderColor: colors.border }]}>
-            <Feather name="search" size={20} color={isDark ? '#92E5EC' : '#94a3b8'} style={styles.searchIcon} />
+          <BlurView
+            intensity={Platform.OS === 'web' ? 0 : 65}
+            tint={isDark ? "dark" : "light"}
+            style={[
+              styles.searchBar, 
+              { 
+                backgroundColor: isDark ? 'rgba(0, 15, 8, 0.72)' : 'rgba(255, 255, 255, 0.75)', 
+                borderColor: colors.border 
+              }
+            ]}
+          >
+            <Feather name="search" size={20} color={isDark ? '#92E5EC' : '#64748b'} style={styles.searchIcon} />
             <TextInput
               style={[styles.searchInput, { color: colors.text }]}
               placeholder="Search reports or tap map..."
@@ -296,15 +306,26 @@ export default function HomeScreen() {
             <TouchableOpacity style={styles.micBtn} onPress={toggleTheme}>
               <Feather name={isDark ? "sun" : "moon"} size={18} color={colors.accent} />
             </TouchableOpacity>
-          </View>
+          </BlurView>
 
           {/* Quick Stats Pill */}
           <View style={styles.statsPillWrapper}>
-            <View style={[styles.statsPill, { backgroundColor: 'rgba(0, 15, 8, 0.8)' }]}>
+            <BlurView
+              intensity={Platform.OS === 'web' ? 0 : 50}
+              tint="dark"
+              style={[
+                styles.statsPill, 
+                { 
+                  backgroundColor: 'rgba(0, 15, 8, 0.75)',
+                  borderColor: 'rgba(146, 229, 236, 0.15)',
+                  borderWidth: 1
+                }
+              ]}
+            >
               <View style={styles.pulseIndicator} />
               <Text style={styles.statsPillText}>Bhopal Live Command: {reports.length} Tickets</Text>
               <Text style={styles.pointsPill}>🏆 {userPoints} pts</Text>
-            </View>
+            </BlurView>
           </View>
         </View>
       </SafeAreaView>
@@ -319,13 +340,23 @@ export default function HomeScreen() {
       {/* Sleek Bottom Sheet Details Card (Umami Bam styling) */}
       {selectedReport && (
         <View style={styles.detailOverlay}>
-          <View style={[styles.detailCard, { backgroundColor: colors.cardBg, borderColor: colors.border }]}>
+          <BlurView
+            intensity={Platform.OS === 'web' ? 0 : 70}
+            tint={isDark ? "dark" : "light"}
+            style={[
+              styles.detailCard, 
+              { 
+                backgroundColor: isDark ? 'rgba(0, 15, 8, 0.72)' : 'rgba(255, 255, 255, 0.75)', 
+                borderColor: colors.border 
+              }
+            ]}
+          >
             <View style={styles.cardDragHandle} />
             
             <View style={styles.detailCardHeader}>
               <View style={{ flex: 1 }}>
-                <Text style={[styles.detailTitle, { color: colors.text }]}>{selectedReport.category} Issue</Text>
-                <Text style={styles.detailAddress}>{selectedReport.department}</Text>
+                <Text style={[styles.detailTitle, { color: colors.text }]}>{selectedReport.category} Hazard</Text>
+                <Text style={[styles.detailAddress, { color: colors.textSecondary }]}>{selectedReport.department}</Text>
               </View>
               <TouchableOpacity style={styles.bookmarkBtn}>
                 <Feather name="bookmark" size={20} color={colors.accent} />
@@ -333,54 +364,81 @@ export default function HomeScreen() {
             </View>
 
             <View style={styles.badgeRow}>
-              <View style={styles.openBadge}>
-                <Text style={styles.openBadgeText}>Severity {selectedReport.severity}/10</Text>
+              <View style={[
+                styles.openBadge, 
+                { 
+                  backgroundColor: selectedReport.status === 'Resolved' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(255, 111, 0, 0.1)' 
+                }
+              ]}>
+                <Text style={[
+                  styles.openBadgeText, 
+                  { 
+                    color: selectedReport.status === 'Resolved' ? '#10b981' : '#FF6F00' 
+                  }
+                ]}>
+                  {selectedReport.status === 'Resolved' ? 'Resolved ✓' : 'Active report'}
+                </Text>
               </View>
               <Text style={[styles.dateText, { color: colors.textSecondary }]}>Reported {selectedReport.date}</Text>
             </View>
 
-            {/* Category info line */}
+            {/* Dynamic Category Details Row (Matches the Restaurant Row in mockup) */}
             <View style={styles.categoryLine}>
               <View style={[styles.categoryCircle, { backgroundColor: colors.accentBg }]}>
-                <Feather name="alert-triangle" size={14} color={colors.accent} />
+                <Feather 
+                  name={
+                    selectedReport.category === 'Roads' ? 'map-pin' : 
+                    selectedReport.category === 'Sanitation' ? 'trash-2' : 
+                    selectedReport.category === 'Water' ? 'droplet' : 'alert-triangle'
+                  } 
+                  size={18} 
+                  color={colors.accent} 
+                />
               </View>
-              <Text style={[styles.categoryLineText, { color: colors.textSecondary }]}>
-                Status: <Text style={{ color: colors.accent, fontWeight: '600' }}>{selectedReport.status}</Text>
-              </Text>
+              <View style={styles.categoryTextCol}>
+                <Text style={[styles.categoryTitle, { color: colors.text }]}>
+                  {selectedReport.category} Department
+                </Text>
+                <Text style={[styles.categorySubtitle, { color: colors.textSecondary }]}>
+                  Priority Level {selectedReport.severity}/10 · {selectedReport.upvotes} Citizens Confirmed
+                </Text>
+              </View>
             </View>
 
             {/* Main description text */}
             <Text style={[styles.detailDesc, { color: colors.text }]}>{selectedReport.description}</Text>
 
             {/* Horizontal Scroll list of images */}
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.imagesScroll}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.imagesScroll} contentContainerStyle={{ gap: 10 }}>
               <Image source={{ uri: selectedReport.image }} style={styles.scrollImage} />
               <Image source={{ uri: 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=500' }} style={styles.scrollImage} />
               <Image source={{ uri: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=500' }} style={styles.scrollImage} />
             </ScrollView>
 
-            {/* Action buttons */}
+            {/* Action buttons (Matches Mockup Outlined Directions & Filled Start Buttons) */}
             <View style={styles.detailActions}>
-              <TouchableOpacity style={[styles.actionBtnOutline, { borderColor: colors.border }]} onPress={() => setSelectedReport(null)}>
-                <Text style={[styles.actionTextOutline, { color: colors.text }]}>Dismiss</Text>
+              <TouchableOpacity 
+                style={[styles.actionBtnOutline, { borderColor: colors.accent }]} 
+                onPress={() => setSelectedReport(null)}
+              >
+                <Text style={[styles.actionTextOutline, { color: colors.accent }]}>Dismiss</Text>
               </TouchableOpacity>
               
               <TouchableOpacity
-                style={[styles.actionBtnFilled, selectedReport.verifiedByUser && styles.actionBtnDisabled]}
+                style={[
+                  styles.actionBtnFilled, 
+                  { backgroundColor: colors.accent }, 
+                  selectedReport.verifiedByUser && styles.actionBtnDisabled
+                ]}
                 onPress={handleVerify}
                 disabled={selectedReport.verifiedByUser}
               >
-                <LinearGradient
-                  colors={selectedReport.verifiedByUser ? ['#64748b', '#475569'] : [colors.accent, '#e65c00']}
-                  style={styles.actionGradient}
-                >
-                  <Text style={styles.actionTextFilled}>
-                    {selectedReport.verifiedByUser ? 'Verified ✓' : 'Verify (+50 pts)'}
-                  </Text>
-                </LinearGradient>
+                <Text style={styles.actionTextFilled}>
+                  {selectedReport.verifiedByUser ? 'Verified ✓' : 'Verify (+50 pts)'}
+                </Text>
               </TouchableOpacity>
             </View>
-          </View>
+          </BlurView>
         </View>
       )}
 
@@ -415,7 +473,17 @@ export default function HomeScreen() {
         <View style={styles.modalBg}>
           <TouchableOpacity style={styles.modalDismissBg} onPress={() => setIsReportModalVisible(false)} />
           
-          <View style={[styles.modalContent, { backgroundColor: colors.cardBg, borderColor: colors.border }]}>
+          <BlurView
+            intensity={Platform.OS === 'web' ? 0 : 75}
+            tint={isDark ? "dark" : "light"}
+            style={[
+              styles.modalContent, 
+              { 
+                backgroundColor: isDark ? 'rgba(0, 15, 8, 0.8)' : 'rgba(255, 255, 255, 0.82)', 
+                borderColor: colors.border 
+              }
+            ]}
+          >
             <View style={styles.cardDragHandle} />
             
             <View style={styles.modalHeader}>
@@ -534,7 +602,7 @@ export default function HomeScreen() {
               )}
 
             </ScrollView>
-          </View>
+          </BlurView>
         </View>
       </Modal>
 
@@ -583,7 +651,7 @@ const styles = StyleSheet.create({
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 24,
+    borderRadius: 30, // capsule style search bar
     borderWidth: 1,
     height: 54,
     paddingHorizontal: 16,
@@ -593,6 +661,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.04,
     shadowRadius: 10,
     elevation: 3,
+    overflow: 'hidden',
+    ...Platform.select({
+      web: {
+        backdropFilter: 'blur(20px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+      } as any,
+    }),
   },
   searchIcon: {
     marginRight: 12,
@@ -617,10 +692,17 @@ const styles = StyleSheet.create({
   statsPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 6,
-    paddingHorizontal: 14,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
     borderRadius: 20,
     gap: 8,
+    overflow: 'hidden',
+    ...Platform.select({
+      web: {
+        backdropFilter: 'blur(15px) saturate(160%)',
+        WebkitBackdropFilter: 'blur(15px) saturate(160%)',
+      } as any,
+    }),
   },
   pulseIndicator: {
     width: 6,
@@ -669,15 +751,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   detailCard: {
-    borderRadius: 28,
-    padding: 24,
+    borderRadius: 36, // Increased to 36 for extra premium rounded feel!
+    padding: 28, // Increased padding
     borderWidth: 1,
     shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.05,
-    shadowRadius: 15,
-    elevation: 6,
-    maxHeight: height * 0.58,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.08,
+    shadowRadius: 18,
+    elevation: 8,
+    maxHeight: height * 0.62,
+    overflow: 'hidden',
+    ...Platform.select({
+      web: {
+        backdropFilter: 'blur(30px) saturate(190%)',
+        WebkitBackdropFilter: 'blur(30px) saturate(190%)',
+      } as any,
+    }),
   },
   cardDragHandle: {
     width: 36,
@@ -713,14 +802,12 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   openBadge: {
-    backgroundColor: 'rgba(255, 111, 0, 0.08)',
-    borderRadius: 6,
-    paddingVertical: 3,
-    paddingHorizontal: 8,
+    borderRadius: 14, // Capsule badge
+    paddingVertical: 5,
+    paddingHorizontal: 12,
   },
   openBadgeText: {
-    color: '#FF6F00',
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: 'bold',
     textTransform: 'uppercase',
   },
@@ -730,18 +817,27 @@ const styles = StyleSheet.create({
   categoryLine: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 14,
+    gap: 12,
+    marginBottom: 18,
+    marginTop: 4,
   },
   categoryCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 44, // Matches 44 diameter in mockup
+    height: 44,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  categoryLineText: {
-    fontSize: 13,
+  categoryTextCol: {
+    flexDirection: 'column',
+  },
+  categoryTitle: {
+    fontSize: 15.5,
+    fontWeight: '700',
+  },
+  categorySubtitle: {
+    fontSize: 12,
+    marginTop: 2.5,
   },
   detailDesc: {
     fontSize: 14,
@@ -753,10 +849,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   scrollImage: {
-    width: 90,
-    height: 90,
-    borderRadius: 14,
-    marginRight: 10,
+    width: 105,
+    height: 120, // Tall ratio like screenshot images
+    borderRadius: 16,
   },
   detailActions: {
     flexDirection: 'row',
@@ -764,21 +859,22 @@ const styles = StyleSheet.create({
   },
   actionBtnOutline: {
     flex: 1,
-    height: 48,
-    borderRadius: 24,
-    borderWidth: 1,
+    height: 52, // Thick capsule button height
+    borderRadius: 26,
+    borderWidth: 1.8, // Slightly thicker border
     justifyContent: 'center',
     alignItems: 'center',
   },
   actionTextOutline: {
-    fontWeight: 'bold',
-    fontSize: 14,
+    fontWeight: '700',
+    fontSize: 14.5,
   },
   actionBtnFilled: {
     flex: 1,
-    height: 48,
-    borderRadius: 24,
-    overflow: 'hidden',
+    height: 52, // Thick capsule button height
+    borderRadius: 26,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   actionBtnDisabled: {
     opacity: 0.6,
@@ -835,9 +931,9 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFill,
   },
   modalContent: {
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    padding: 24,
+    borderTopLeftRadius: 36, // More rounded top
+    borderTopRightRadius: 36,
+    padding: 28,
     height: height * 0.82,
     borderWidth: 1,
     shadowColor: '#000000',
@@ -845,6 +941,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 15,
     elevation: 10,
+    overflow: 'hidden',
+    ...Platform.select({
+      web: {
+        backdropFilter: 'blur(30px) saturate(190%)',
+        WebkitBackdropFilter: 'blur(30px) saturate(190%)',
+      } as any,
+    }),
   },
   modalHeader: {
     flexDirection: 'row',

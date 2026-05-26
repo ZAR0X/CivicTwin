@@ -6,14 +6,11 @@ import {
   TabTriggerSlotProps,
   TabListProps,
 } from 'expo-router/ui';
-import { SymbolView } from 'expo-symbols';
-import { Pressable, useColorScheme, View, StyleSheet } from 'react-native';
-
-import { ExternalLink } from './external-link';
+import { Pressable, useColorScheme, View, StyleSheet, Text, Platform } from 'react-native';
 import { ThemedText } from './themed-text';
 import { ThemedView } from './themed-view';
-
-import { Colors, MaxContentWidth, Spacing } from '@/constants/theme';
+import { Colors, Spacing } from '@/constants/theme';
+import { useApp } from '@/context/AppContext';
 
 export default function AppTabs() {
   return (
@@ -34,43 +31,64 @@ export default function AppTabs() {
 }
 
 export function TabButton({ children, isFocused, ...props }: TabTriggerSlotProps) {
+  const { theme } = useApp();
+  const isDark = theme === 'dark';
+
+  const palette = {
+    activeBg: '#FF6F00',
+    activeText: '#ffffff',
+    inactiveText: isDark ? '#92E5EC' : '#64748b',
+    inactiveBg: 'transparent',
+  };
+
   return (
-    <Pressable {...props} style={({ pressed }) => pressed && styles.pressed}>
-      <ThemedView
-        type={isFocused ? 'backgroundSelected' : 'backgroundElement'}
-        style={styles.tabButtonView}>
-        <ThemedText type="small" themeColor={isFocused ? 'text' : 'textSecondary'}>
+    <Pressable {...props} style={styles.tabPressable}>
+      <View
+        style={[
+          styles.tabButtonView,
+          {
+            backgroundColor: isFocused ? palette.activeBg : palette.inactiveBg,
+          }
+        ]}
+      >
+        <Text
+          style={[
+            styles.tabButtonText,
+            {
+              color: isFocused ? palette.activeText : palette.inactiveText,
+              fontWeight: isFocused ? 'bold' : '600',
+            }
+          ]}
+        >
           {children}
-        </ThemedText>
-      </ThemedView>
+        </Text>
+      </View>
     </Pressable>
   );
 }
 
 export function CustomTabList(props: TabListProps) {
-  const scheme = useColorScheme();
-  const colors = Colors[scheme === 'unspecified' ? 'light' : scheme];
+  const { theme } = useApp();
+  const isDark = theme === 'dark';
+
+  const listColors = {
+    bg: isDark ? 'rgba(0, 15, 8, 0.7)' : 'rgba(244, 255, 254, 0.72)',
+    border: isDark ? 'rgba(146, 229, 236, 0.15)' : 'rgba(0, 15, 8, 0.08)',
+  };
 
   return (
     <View {...props} style={styles.tabListContainer}>
-      <ThemedView type="backgroundElement" style={styles.innerContainer}>
-        <ThemedText type="smallBold" style={styles.brandText}>
-          Expo Starter
-        </ThemedText>
-
+      <View 
+        style={[
+          styles.innerContainer, 
+          { 
+            backgroundColor: listColors.bg, 
+            borderColor: listColors.border 
+          }
+        ]}
+      >
         {props.children}
-
-        <ExternalLink href="https://docs.expo.dev" asChild>
-          <Pressable style={styles.externalPressable}>
-            <ThemedText type="link">Docs</ThemedText>
-            <SymbolView
-              tintColor={colors.text}
-              name={{ ios: 'arrow.up.right.square', web: 'link' }}
-              size={12}
-            />
-          </Pressable>
-        </ExternalLink>
-      </ThemedView>
+      </View>
     </View>
   );
 }
@@ -78,38 +96,48 @@ export function CustomTabList(props: TabListProps) {
 const styles = StyleSheet.create({
   tabListContainer: {
     position: 'absolute',
-    width: '100%',
-    padding: Spacing.three,
+    bottom: 24, // Floating at the bottom
+    left: 0,
+    right: 0,
     justifyContent: 'center',
     alignItems: 'center',
-    flexDirection: 'row',
+    zIndex: 99,
   },
   innerContainer: {
-    paddingVertical: Spacing.two,
-    paddingHorizontal: Spacing.five,
-    borderRadius: Spacing.five,
     flexDirection: 'row',
     alignItems: 'center',
-    flexGrow: 1,
-    gap: Spacing.two,
-    maxWidth: MaxContentWidth,
+    justifyContent: 'space-around',
+    paddingVertical: 6,
+    paddingHorizontal: 6,
+    borderRadius: 32, // Beautiful rounded capsule
+    borderWidth: 1,
+    width: '90%',
+    maxWidth: 360,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.1,
+    shadowRadius: 18,
+    elevation: 10,
+    // Web glassmorphism
+    ...Platform.select({
+      web: {
+        backdropFilter: 'blur(30px) saturate(210%)',
+        WebkitBackdropFilter: 'blur(30px) saturate(210%)',
+      } as any,
+    }),
   },
-  brandText: {
-    marginRight: 'auto',
-  },
-  pressed: {
-    opacity: 0.7,
+  tabPressable: {
+    flex: 1,
+    marginHorizontal: 3,
   },
   tabButtonView: {
-    paddingVertical: Spacing.one,
-    paddingHorizontal: Spacing.three,
-    borderRadius: Spacing.three,
-  },
-  externalPressable: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 26, // Perfect internal pill shape
     alignItems: 'center',
-    gap: Spacing.one,
-    marginLeft: Spacing.three,
+    justifyContent: 'center',
+  },
+  tabButtonText: {
+    fontSize: 13.5,
+    letterSpacing: 0.3,
   },
 });
