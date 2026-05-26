@@ -76,7 +76,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   }, []);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval>;
     if (isOtpSent && timer > 0) {
       interval = setInterval(() => {
         setTimer((prev) => prev - 1);
@@ -116,8 +116,8 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
     <View style={[styles.container, { backgroundColor: isDark ? '#000F08' : '#F4FFFE' }]}>
       {/* Dynamic Background Gradients */}
       <LinearGradient
-        colors={colors.bg}
-        style={StyleSheet.absoluteFillObject}
+        colors={colors.bg as any}
+        style={StyleSheet.absoluteFill}
       />
 
       {/* Decorative Blur Orbs */}
