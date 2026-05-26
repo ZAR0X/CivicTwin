@@ -13,6 +13,7 @@ export default function TabLayout() {
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
     if (Platform.OS === 'web') {
       try {
+        if (__DEV__) return true;
         return localStorage.getItem('civictwin_logged_in') === 'true';
       } catch (e) {
         return false;
