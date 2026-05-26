@@ -426,6 +426,14 @@ export const getMapHtml = (reports: typeof MOCK_REPORTS) => {
       }
     };
 
+    // Toggle map theme style
+    window.setMapTheme = (themeName) => {
+      const styleUrl = themeName === 'light' 
+        ? 'https://tiles.openfreemap.org/styles/bright' 
+        : 'https://tiles.openfreemap.org/styles/3d';
+      map.setStyle(styleUrl);
+    };
+
     // Fly to coordinates
     window.flyToLocation = (lat, lng, zoom = 15.5) => {
       map.flyTo({
@@ -462,9 +470,24 @@ export const getMapHtml = (reports: typeof MOCK_REPORTS) => {
       if (window.ReactNativeWebView) {
         window.ReactNativeWebView.postMessage(JSON.stringify(data));
       } else {
-        console.log('Sending message to React Native:', data);
+        // Fallback for standard iframe web communication
+        window.parent.postMessage(JSON.stringify(data), '*');
       }
     }
+
+    // Web iframe message receiver
+    window.addEventListener('message', (e) => {
+      try {
+        const msg = JSON.parse(e.data);
+        if (msg.type === 'toggleMapMode') {
+          window.toggleMapMode(msg.mode);
+        } else if (msg.type === 'setMapTheme') {
+          window.setMapTheme(msg.theme);
+        } else if (msg.type === 'updateReports') {
+          window.updateReports(msg.list);
+        }
+      } catch (err) {}
+    });
 
     // Toggle markers based on zoom level (visible only at close zoom)
     function updateZoomMarkers() {

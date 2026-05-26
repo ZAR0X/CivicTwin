@@ -4,9 +4,8 @@ import {
   View,
   Text,
   ScrollView,
-  FlatList,
   Platform,
-  Image,
+  SafeAreaView,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
@@ -22,8 +21,23 @@ interface Contributor {
 }
 
 export default function LeaderboardScreen() {
-  const { userPoints, userRank } = useApp();
+  const { userPoints, theme } = useApp();
   const insets = useSafeAreaInsets();
+
+  const isDark = theme === 'dark';
+
+  const palette = {
+    bg: isDark ? '#000F08' : '#F4FFFE',
+    bgGradient: isDark ? ['#000F08', '#01120a', '#000000'] : ['#F4FFFE', '#e6fcf9', '#ffffff'],
+    text: isDark ? '#ffffff' : '#000F08',
+    textSecondary: isDark ? '#92E5EC' : '#475569',
+    cardBg: isDark ? 'rgba(0, 15, 8, 0.75)' : 'rgba(244, 255, 254, 0.85)',
+    cardBorder: isDark ? 'rgba(146, 229, 236, 0.15)' : 'rgba(0, 15, 8, 0.08)',
+    rowBg: isDark ? 'rgba(146, 229, 236, 0.03)' : 'rgba(0, 15, 8, 0.03)',
+    rowBorder: isDark ? 'rgba(146, 229, 236, 0.08)' : 'rgba(0, 15, 8, 0.05)',
+    accentOrange: '#FF6F00',
+    electricAqua: '#92E5EC',
+  };
 
   const MOCK_LEADERBOARD: Contributor[] = [
     { rank: 1, name: 'Ananya Sharma', points: 340, reportsCount: 14 },
@@ -45,12 +59,18 @@ export default function LeaderboardScreen() {
     rank: index + 1,
   }));
 
-  const renderLeaderboardItem = ({ item }: { item: Contributor }) => {
+  const renderLeaderboardItem = (item: Contributor) => {
     return (
-      <View style={[
-        styles.listRow,
-        item.isCurrentUser && styles.currentUserRow
-      ]}>
+      <View 
+        key={item.name}
+        style={[
+          styles.listRow,
+          { 
+            backgroundColor: item.isCurrentUser ? 'rgba(255, 111, 0, 0.06)' : palette.rowBg, 
+            borderColor: item.isCurrentUser ? palette.accentOrange : palette.rowBorder 
+          }
+        ]}
+      >
         <View style={styles.rankContainer}>
           {item.rank === 1 ? (
             <Text style={styles.goldMedal}>🥇</Text>
@@ -59,100 +79,98 @@ export default function LeaderboardScreen() {
           ) : item.rank === 3 ? (
             <Text style={styles.bronzeMedal}>🥉</Text>
           ) : (
-            <Text style={styles.rankText}>#{item.rank}</Text>
+            <Text style={[styles.rankText, { color: palette.textSecondary }]}>#{item.rank}</Text>
           )}
         </View>
 
-        <View style={styles.avatarContainer}>
-          <Text style={styles.avatarText}>
+        <View style={[styles.avatarContainer, { backgroundColor: isDark ? 'rgba(146, 229, 236, 0.1)' : 'rgba(0, 15, 8, 0.05)' }]}>
+          <Text style={[styles.avatarText, { color: palette.text }]}>
             {item.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
           </Text>
         </View>
 
         <View style={styles.nameContainer}>
-          <Text style={[styles.userName, item.isCurrentUser && styles.currentUserText]}>
+          <Text style={[styles.userName, { color: palette.text }, item.isCurrentUser && { color: palette.accentOrange, fontWeight: 'bold' }]}>
             {item.name}
           </Text>
-          <Text style={styles.reportsStat}>{item.reportsCount} Reports Submitted</Text>
+          <Text style={[styles.reportsStat, { color: palette.textSecondary }]}>{item.reportsCount} Reports Submitted</Text>
         </View>
 
         <View style={styles.scoreContainer}>
-          <Text style={styles.scoreValue}>{item.points}</Text>
-          <Text style={styles.scoreLabel}>PTS</Text>
+          <Text style={[styles.scoreValue, { color: palette.text }]}>{item.points}</Text>
+          <Text style={[styles.scoreLabel, { color: palette.textSecondary }]}>PTS</Text>
         </View>
       </View>
     );
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: palette.bg }]}>
       <LinearGradient
-        colors={['#0f172a', '#020617']}
+        colors={palette.bgGradient}
         style={StyleSheet.absoluteFillObject}
       />
       
       {/* Background radial glow */}
-      <View style={styles.glowBlob} />
+      <View style={[styles.glowBlob, { backgroundColor: palette.electricAqua }]} />
 
       <ScrollView 
         contentContainerStyle={[
           styles.scrollContainer, 
-          { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 80 }
+          { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 100 }
         ]}
         showsVerticalScrollIndicator={false}
       >
         {/* Header Title */}
         <View style={styles.header}>
-          <Text style={styles.title}>Bhopal Civic Pride</Text>
-          <Text style={styles.subtitle}>Leaderboard of Active Whistleblowers</Text>
+          <Text style={[styles.title, { color: palette.text }]}>Bhopal Civic Pride</Text>
+          <Text style={[styles.subtitle, { color: palette.textSecondary }]}>Leaderboard of Active Whistleblowers</Text>
         </View>
 
         {/* User Card - Glassmorphism */}
-        <View style={styles.userCardContainer}>
-          <BlurView intensity={25} tint="dark" style={styles.blurCard}>
+        <View style={[styles.userCardContainer, { borderColor: palette.cardBorder }]}>
+          <BlurView intensity={isDark ? 20 : 40} tint={isDark ? 'dark' : 'light'} style={styles.blurCard}>
             <LinearGradient
-              colors={['rgba(16, 185, 129, 0.1)', 'rgba(99, 102, 241, 0.05)']}
+              colors={isDark ? ['rgba(255, 111, 0, 0.1)', 'rgba(146, 229, 236, 0.05)'] : ['rgba(255, 111, 0, 0.05)', 'rgba(146, 229, 236, 0.03)']}
               style={StyleSheet.absoluteFillObject}
             />
             
             <View style={styles.cardHeader}>
-              <Text style={styles.cardTitle}>Your Rep Scorecard</Text>
-              <Text style={styles.cardLevel}>Level 2: Active Citizen</Text>
+              <Text style={[styles.cardTitle, { color: palette.text }]}>Your Rep Scorecard</Text>
+              <Text style={[styles.cardLevel, { color: palette.accentOrange }]}>Level 2: Active Citizen</Text>
             </View>
 
             <View style={styles.cardStatsRow}>
               <View style={styles.cardStatCol}>
-                <Text style={styles.statNumber}>#{rankedLeaderboard.findIndex(i => i.isCurrentUser) + 1}</Text>
-                <Text style={styles.statLabel}>Bhopal Rank</Text>
+                <Text style={[styles.statNumber, { color: palette.text }]}>
+                  #{rankedLeaderboard.findIndex(i => i.isCurrentUser) + 1}
+                </Text>
+                <Text style={[styles.statLabel, { color: palette.textSecondary }]}>Bhopal Rank</Text>
               </View>
-              <View style={styles.cardDivider} />
+              <View style={[styles.cardDivider, { backgroundColor: palette.cardBorder }]} />
               <View style={styles.cardStatCol}>
-                <Text style={styles.statNumber}>{userPoints}</Text>
-                <Text style={styles.statLabel}>Total Points</Text>
+                <Text style={[styles.statNumber, { color: palette.text }]}>{userPoints}</Text>
+                <Text style={[styles.statLabel, { color: palette.textSecondary }]}>Total Points</Text>
               </View>
-              <View style={styles.cardDivider} />
+              <View style={[styles.cardDivider, { backgroundColor: palette.cardBorder }]} />
               <View style={styles.cardStatCol}>
-                <Text style={styles.statNumber}>5</Text>
-                <Text style={styles.statLabel}>Submissions</Text>
+                <Text style={[styles.statNumber, { color: palette.text }]}>5</Text>
+                <Text style={[styles.statLabel, { color: palette.textSecondary }]}>Submissions</Text>
               </View>
             </View>
 
-            <Text style={styles.pointsPrompt}>
+            <Text style={[styles.pointsPrompt, { color: palette.text, backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }]}>
               💡 Submit 2 more verified reports to level up and gain double point multipliers!
             </Text>
           </BlurView>
         </View>
 
         {/* Leaderboard Heading */}
-        <Text style={styles.listHeading}>City Contributors</Text>
+        <Text style={[styles.listHeading, { color: palette.text }]}>City Contributors</Text>
 
         {/* Leaderboard Table List */}
-        <View style={styles.leaderboardList}>
-          {rankedLeaderboard.map((item) => (
-            <React.Fragment key={item.name}>
-              {renderLeaderboardItem({ item })}
-            </React.Fragment>
-          ))}
+        <View style={[styles.leaderboardList, { borderColor: palette.rowBorder }]}>
+          {rankedLeaderboard.map((item) => renderLeaderboardItem(item))}
         </View>
 
       </ScrollView>
@@ -163,7 +181,6 @@ export default function LeaderboardScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#020617',
   },
   scrollContainer: {
     paddingHorizontal: 20,
@@ -173,11 +190,10 @@ const styles = StyleSheet.create({
     width: 300,
     height: 300,
     borderRadius: 150,
-    backgroundColor: '#6366f1',
-    opacity: 0.08,
+    opacity: 0.1,
     top: '10%',
     right: '-10%',
-    filter: Platform.OS === 'web' ? 'blur(80px)' : undefined,
+    filter: Platform.OS === 'web' ? 'blur(95px)' : undefined,
   },
   header: {
     marginBottom: 28,
@@ -185,19 +201,16 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#ffffff',
     letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 14,
-    color: '#64748b',
     marginTop: 4,
   },
   userCardContainer: {
     borderRadius: 24,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
     marginBottom: 32,
   },
   blurCard: {
@@ -210,12 +223,10 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   cardTitle: {
-    color: '#ffffff',
     fontSize: 15,
     fontWeight: '600',
   },
   cardLevel: {
-    color: '#10b981',
     fontSize: 12,
     fontWeight: 'bold',
     textTransform: 'uppercase',
@@ -232,24 +243,19 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 28,
     fontWeight: '800',
-    color: '#ffffff',
   },
   statLabel: {
     fontSize: 11,
-    color: '#64748b',
     marginTop: 4,
   },
   cardDivider: {
     width: 1,
     height: 32,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
   },
   pointsPrompt: {
     fontSize: 12,
-    color: '#94a3b8',
     lineHeight: 18,
     textAlign: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.02)',
     paddingVertical: 10,
     paddingHorizontal: 12,
     borderRadius: 12,
@@ -257,7 +263,6 @@ const styles = StyleSheet.create({
   listHeading: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#ffffff',
     marginBottom: 16,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -265,9 +270,7 @@ const styles = StyleSheet.create({
   leaderboardList: {
     borderRadius: 24,
     overflow: 'hidden',
-    backgroundColor: 'rgba(255, 255, 255, 0.02)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
   },
   listRow: {
     flexDirection: 'row',
@@ -277,9 +280,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255, 255, 255, 0.03)',
   },
-  currentUserRow: {
-    backgroundColor: 'rgba(16, 185, 129, 0.05)',
-  },
   rankContainer: {
     width: 32,
     alignItems: 'flex-start',
@@ -288,7 +288,6 @@ const styles = StyleSheet.create({
   silverMedal: { fontSize: 20 },
   bronzeMedal: { fontSize: 20 },
   rankText: {
-    color: '#64748b',
     fontWeight: '600',
     fontSize: 14,
   },
@@ -296,13 +295,11 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
   },
   avatarText: {
-    color: '#cbd5e1',
     fontSize: 11,
     fontWeight: 'bold',
   },
@@ -310,16 +307,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   userName: {
-    color: '#e2e8f0',
     fontSize: 14,
     fontWeight: '600',
   },
-  currentUserText: {
-    color: '#10b981',
-    fontWeight: 'bold',
-  },
   reportsStat: {
-    color: '#64748b',
     fontSize: 11,
     marginTop: 2,
   },
@@ -327,13 +318,11 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   scoreValue: {
-    color: '#ffffff',
     fontSize: 16,
     fontWeight: 'bold',
   },
   scoreLabel: {
     fontSize: 9,
-    color: '#64748b',
     marginTop: 1,
   },
 });

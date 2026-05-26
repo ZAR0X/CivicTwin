@@ -7,48 +7,74 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
-  TouchableWithoutFeedback,
-  Keyboard,
   Animated,
-  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
+import { useApp } from '@/context/AppContext';
 
 interface LoginScreenProps {
   onLoginSuccess: () => void;
 }
 
 export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
+  const { theme, toggleTheme } = useApp();
   const [phoneNumber, setPhoneNumber] = useState('');
   const [otpCode, setOtpCode] = useState('');
   const [isOtpSent, setIsOtpSent] = useState(false);
   const [timer, setTimer] = useState(59);
   const [loading, setLoading] = useState(false);
+  const [showLocationPrompt, setShowLocationPrompt] = useState(false);
 
   // Animation values
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(30)).current;
-  const otpSlideAnim = useRef(new Animated.Value(20)).current;
-  const otpFadeAnim = useRef(new Animated.Value(0)).current;
+  const cardSlideAnim = useRef(new Animated.Value(400)).current; // Emerge from bottom
+  const cardFadeAnim = useRef(new Animated.Value(0)).current;
+  const logoFadeAnim = useRef(new Animated.Value(0)).current;
+  const logoScaleAnim = useRef(new Animated.Value(0.9)).current;
+
+  // Colors based on palette: Onyx (000F08), Pumpkin Spice (FF6F00), Azure Mist (F4FFFE), Electric Aqua (92E5EC)
+  const isDark = theme === 'dark';
+  
+  const colors = {
+    bg: isDark ? ['#000F08', '#011c10', '#000000'] : ['#F4FFFE', '#e0fcf9', '#ffffff'],
+    text: isDark ? '#ffffff' : '#000F08',
+    textSecondary: isDark ? '#92E5EC' : '#475569',
+    cardBg: isDark ? 'rgba(0, 15, 8, 0.75)' : 'rgba(244, 255, 254, 0.85)',
+    inputBg: isDark ? 'rgba(146, 229, 236, 0.05)' : 'rgba(0, 15, 8, 0.03)',
+    inputBorder: isDark ? 'rgba(146, 229, 236, 0.15)' : 'rgba(0, 15, 8, 0.08)',
+    accentOrange: '#FF6F00',
+    electricAqua: '#92E5EC',
+    onyx: '#000F08',
+    azureMist: '#F4FFFE',
+  };
 
   useEffect(() => {
-    // Initial entrance animation
+    // Emerge and fade animations
     Animated.parallel([
-      Animated.timing(fadeAnim, {
+      Animated.timing(logoFadeAnim, {
         toValue: 1,
         duration: 800,
         useNativeDriver: true,
       }),
-      Animated.timing(slideAnim, {
-        toValue: 0,
+      Animated.timing(logoScaleAnim, {
+        toValue: 1,
         duration: 800,
+        useNativeDriver: true,
+      }),
+      Animated.timing(cardFadeAnim, {
+        toValue: 1,
+        duration: 900,
+        useNativeDriver: true,
+      }),
+      Animated.timing(cardSlideAnim, {
+        toValue: 0,
+        duration: 900,
         useNativeDriver: true,
       }),
     ]).start();
   }, []);
 
-  // Timer countdown for OTP
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isOtpSent && timer > 0) {
@@ -61,290 +87,373 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 
   const handleSendOtp = () => {
     if (phoneNumber.length < 10) {
-      Alert.alert('Invalid Number', 'Please enter a valid 10-digit phone number.');
+      alert('Please enter a valid 10-digit phone number.');
       return;
     }
     setLoading(true);
 
-    // Simulate network delay
     setTimeout(() => {
       setLoading(false);
       setIsOtpSent(true);
       setTimer(59);
-
-      // Animate OTP entry slide-in
-      Animated.parallel([
-        Animated.timing(otpFadeAnim, {
-          toValue: 1,
-          duration: 500,
-          useNativeDriver: true,
-        }),
-        Animated.timing(otpSlideAnim, {
-          toValue: 0,
-          duration: 500,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    }, 1500);
+    }, 1200);
   };
 
   const handleVerifyOtp = () => {
     if (otpCode.length < 6) {
-      Alert.alert('Invalid OTP', 'Please enter the 6-digit code.');
+      alert('Please enter the 6-digit code.');
       return;
     }
     setLoading(true);
 
-    // Simulate OTP verification and location permission prompt
     setTimeout(() => {
       setLoading(false);
-      
-      // Simulate native-like location dialog
-      Alert.alert(
-        'Allow "CivicTwin" to access your location?',
-        'CivicTwin requires your precise GPS location to map civic reports accurately and let you report issues in Bhopal.',
-        [
-          {
-            text: 'Don\'t Allow',
-            onPress: () => {
-              Alert.alert('Permission Denied', 'You will not be able to create real reports, but you can view the Bhopal dashboard.', [
-                { text: 'OK', onPress: onLoginSuccess }
-              ]);
-            },
-            style: 'cancel',
-          },
-          {
-            text: 'Allow While Using App',
-            onPress: () => {
-              onLoginSuccess();
-            },
-          },
-        ],
-        { cancelable: false }
-      );
-    }, 1500);
+      setShowLocationPrompt(true); // Show our custom web-compatible permission modal
+    }, 1200);
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={styles.container}>
-        <LinearGradient
-          colors={['#0f172a', '#1e1b4b', '#020617']}
-          style={StyleSheet.absoluteFillObject}
-        />
+    <View style={[styles.container, { backgroundColor: isDark ? '#000F08' : '#F4FFFE' }]}>
+      {/* Dynamic Background Gradients */}
+      <LinearGradient
+        colors={colors.bg}
+        style={StyleSheet.absoluteFillObject}
+      />
 
-        {/* Dynamic decorative light blobs */}
-        <View style={[styles.glowBlob, { top: '15%', left: '10%', backgroundColor: '#10b981', opacity: 0.15 }]} />
-        <View style={[styles.glowBlob, { bottom: '20%', right: '5%', backgroundColor: '#6366f1', opacity: 0.2 }]} />
+      {/* Decorative Blur Orbs */}
+      <View style={[styles.glowBlob, { 
+        top: '10%', 
+        right: '-10%', 
+        backgroundColor: colors.accentOrange, 
+        opacity: isDark ? 0.15 : 0.1 
+      }]} />
+      <View style={[styles.glowBlob, { 
+        bottom: '30%', 
+        left: '-10%', 
+        backgroundColor: colors.electricAqua, 
+        opacity: isDark ? 0.2 : 0.15 
+      }]} />
 
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.keyboardView}
-        >
-          <Animated.View style={[styles.cardContainer, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-            <BlurView intensity={25} tint="dark" style={styles.blurCard}>
-              
-              {/* Header */}
-              <View style={styles.header}>
-                <Text style={styles.logoText}>CivicTwin</Text>
-                <Text style={styles.tagline}>Bhopal's AI 3D Digital Twin Command Center</Text>
-              </View>
+      {/* Theme Switcher Button */}
+      <TouchableOpacity 
+        style={[styles.themeToggle, { borderColor: colors.inputBorder }]} 
+        onPress={toggleTheme}
+      >
+        <Text style={styles.themeToggleText}>
+          {isDark ? '☀️ Light Mode' : '🌙 Dark Mode'}
+        </Text>
+      </TouchableOpacity>
 
-              {!isOtpSent ? (
-                /* Phone Number Input View */
-                <View style={styles.inputSection}>
-                  <Text style={styles.label}>Enter Phone Number</Text>
-                  <View style={styles.inputWrapper}>
-                    <Text style={styles.prefix}>+91</Text>
-                    <TextInput
-                      style={styles.input}
-                      placeholder="98765 43210"
-                      placeholderTextColor="#64748b"
-                      keyboardType="phone-pad"
-                      maxLength={10}
-                      value={phoneNumber}
-                      onChangeText={setPhoneNumber}
-                      editable={!loading}
-                    />
-                  </View>
-                  <Text style={styles.infoText}>
-                    We will send a 6-digit one-time password to verify your device.
-                  </Text>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={styles.keyboardView}
+      >
+        {/* Top Section with beautiful Graphic / Logo */}
+        <Animated.View style={[
+          styles.graphicSection, 
+          { opacity: logoFadeAnim, transform: [{ scale: logoScaleAnim }] }
+        ]}>
+          <LinearGradient
+            colors={[colors.accentOrange, colors.electricAqua]}
+            style={styles.logoGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <Text style={styles.logoEmoji}>🏙️</Text>
+          </LinearGradient>
+          <Text style={[styles.logoText, { color: colors.text }]}>CivicTwin</Text>
+          <Text style={[styles.tagline, { color: colors.textSecondary }]}>
+            Bhopal's AI 3D Digital Twin Command Center
+          </Text>
+        </Animated.View>
 
-                  <TouchableOpacity
-                    style={styles.primaryButton}
-                    onPress={handleSendOtp}
-                    disabled={loading}
-                    activeOpacity={0.8}
-                  >
-                    <LinearGradient
-                      colors={['#10b981', '#059669']}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 0 }}
-                      style={styles.gradientButton}
-                    >
-                      <Text style={styles.buttonText}>
-                        {loading ? 'Sending OTP...' : 'Send Verification Code'}
-                      </Text>
-                    </LinearGradient>
-                  </TouchableOpacity>
-                </View>
-              ) : (
-                /* OTP Verification View */
-                <Animated.View style={[styles.inputSection, { opacity: otpFadeAnim, transform: [{ translateY: otpSlideAnim }] }]}>
-                  <Text style={styles.label}>Enter 6-Digit OTP</Text>
+        {/* Bottom Emerging Login Card (Full-width, no borders, sliding up) */}
+        <Animated.View style={[
+          styles.cardContainer,
+          {
+            backgroundColor: colors.cardBg,
+            opacity: cardFadeAnim,
+            transform: [{ translateY: cardSlideAnim }],
+          }
+        ]}>
+          <BlurView intensity={isDark ? 20 : 40} tint={isDark ? 'dark' : 'light'} style={styles.blurCard}>
+            
+            {!isOtpSent ? (
+              /* Phone Input Form */
+              <View style={styles.formContainer}>
+                <Text style={[styles.label, { color: colors.text }]}>Mobile Number</Text>
+                
+                <View style={[styles.inputWrapper, { backgroundColor: colors.inputBg, borderColor: colors.inputBorder }]}>
+                  <Text style={[styles.prefix, { color: colors.text }]}>+91</Text>
                   <TextInput
-                    style={styles.otpInput}
-                    placeholder="000 000"
-                    placeholderTextColor="#64748b"
-                    keyboardType="number-pad"
-                    maxLength={6}
-                    value={otpCode}
-                    onChangeText={setOtpCode}
+                    style={[styles.input, { color: colors.text }]}
+                    placeholder="98765 43210"
+                    placeholderTextColor={isDark ? '#64748b' : '#94a3b8'}
+                    keyboardType="phone-pad"
+                    maxLength={10}
+                    value={phoneNumber}
+                    onChangeText={setPhoneNumber}
                     editable={!loading}
                   />
+                </View>
 
-                  <View style={styles.timerRow}>
-                    {timer > 0 ? (
-                      <Text style={styles.timerText}>Resend code in <Text style={styles.boldTimer}>{timer}s</Text></Text>
+                <Text style={styles.infoText}>
+                  Enter your number to sign in. We will send a secure verification code.
+                </Text>
+
+                <TouchableOpacity
+                  style={styles.primaryButton}
+                  onPress={handleSendOtp}
+                  disabled={loading}
+                  activeOpacity={0.8}
+                >
+                  <LinearGradient
+                    colors={['#FF6F00', '#FF8F33']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.gradientButton}
+                  >
+                    {loading ? (
+                      <ActivityIndicator size="small" color="#fff" />
                     ) : (
-                      <TouchableOpacity onPress={handleSendOtp} disabled={loading}>
-                        <Text style={styles.resendText}>Resend OTP</Text>
-                      </TouchableOpacity>
+                      <Text style={styles.buttonText}>Send OTP Code</Text>
                     )}
-                  </View>
+                  </LinearGradient>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              /* OTP Code Form */
+              <View style={styles.formContainer}>
+                <Text style={[styles.label, { color: colors.text }]}>Enter 6-Digit OTP</Text>
+                
+                <TextInput
+                  style={[styles.otpInput, { 
+                    backgroundColor: colors.inputBg, 
+                    borderColor: colors.inputBorder,
+                    color: colors.text
+                  }]}
+                  placeholder="000000"
+                  placeholderTextColor={isDark ? '#64748b' : '#94a3b8'}
+                  keyboardType="number-pad"
+                  maxLength={6}
+                  value={otpCode}
+                  onChangeText={setOtpCode}
+                  editable={!loading}
+                />
 
-                  <TouchableOpacity
-                    style={styles.primaryButton}
-                    onPress={handleVerifyOtp}
-                    disabled={loading}
-                    activeOpacity={0.8}
+                <View style={styles.timerRow}>
+                  {timer > 0 ? (
+                    <Text style={[styles.timerText, { color: colors.textSecondary }]}>
+                      Resend in <Text style={{ color: colors.accentOrange, fontWeight: 'bold' }}>{timer}s</Text>
+                    </Text>
+                  ) : (
+                    <TouchableOpacity onPress={handleSendOtp} disabled={loading}>
+                      <Text style={[styles.resendText, { color: colors.accentOrange }]}>Resend OTP</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+
+                <TouchableOpacity
+                  style={styles.primaryButton}
+                  onPress={handleVerifyOtp}
+                  disabled={loading}
+                  activeOpacity={0.8}
+                >
+                  <LinearGradient
+                    colors={['#FF6F00', '#FF8F33']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.gradientButton}
                   >
-                    <LinearGradient
-                      colors={['#10b981', '#059669']}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 0 }}
-                      style={styles.gradientButton}
-                    >
-                      <Text style={styles.buttonText}>
-                        {loading ? 'Verifying...' : 'Verify & Continue'}
-                      </Text>
-                    </LinearGradient>
-                  </TouchableOpacity>
+                    {loading ? (
+                      <ActivityIndicator size="small" color="#fff" />
+                    ) : (
+                      <Text style={styles.buttonText}>Verify & Continue</Text>
+                    )}
+                  </LinearGradient>
+                </TouchableOpacity>
 
-                  <TouchableOpacity
-                    style={styles.backButton}
-                    onPress={() => setIsOtpSent(false)}
-                    disabled={loading}
-                  >
-                    <Text style={styles.backButtonText}>Back to Phone Input</Text>
-                  </TouchableOpacity>
-                </Animated.View>
-              )}
+                <TouchableOpacity
+                  style={styles.backButton}
+                  onPress={() => setIsOtpSent(false)}
+                  disabled={loading}
+                >
+                  <Text style={[styles.backButtonText, { color: colors.textSecondary }]}>
+                    Change Phone Number
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
 
-            </BlurView>
-          </Animated.View>
-        </KeyboardAvoidingView>
-      </View>
-    </TouchableWithoutFeedback>
+          </BlurView>
+        </Animated.View>
+      </KeyboardAvoidingView>
+
+      {/* Custom Cross-Platform Web-Compatible Permission Prompt */}
+      {showLocationPrompt && (
+        <View style={styles.promptBg}>
+          <BlurView intensity={50} tint="dark" style={styles.promptContainer}>
+            <View style={styles.promptIconWrapper}>
+              <Text style={styles.promptIcon}>📍</Text>
+            </View>
+            
+            <Text style={styles.promptTitle}>Enable Location Access</Text>
+            <Text style={styles.promptDesc}>
+              CivicTwin Bhopal needs your location to plot dynamic heatmaps and submit reporting pins with precise GPS coordinates.
+            </Text>
+
+            <View style={styles.promptActions}>
+              <TouchableOpacity 
+                style={styles.promptBtnSecondary}
+                onPress={onLoginSuccess}
+              >
+                <Text style={styles.promptBtnTextSecondary}>Don't Allow</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.promptBtnPrimary}
+                onPress={onLoginSuccess}
+              >
+                <LinearGradient
+                  colors={['#FF6F00', '#FF8F33']}
+                  style={styles.promptGradient}
+                >
+                  <Text style={styles.promptBtnTextPrimary}>Allow Access</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          </BlurView>
+        </View>
+      )}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     alignItems: 'center',
-  },
-  keyboardView: {
     width: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cardContainer: {
-    width: '90%',
-    maxWidth: 400,
-    borderRadius: 24,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  blurCard: {
-    padding: 32,
-    alignItems: 'stretch',
   },
   glowBlob: {
     position: 'absolute',
-    width: 250,
-    height: 250,
-    borderRadius: 125,
-    filter: Platform.OS === 'web' ? 'blur(80px)' : undefined, // blur filter on web
+    width: 320,
+    height: 320,
+    borderRadius: 160,
+    filter: Platform.OS === 'web' ? 'blur(90px)' : undefined,
   },
-  header: {
+  themeToggle: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 50 : 20,
+    right: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    zIndex: 99,
+  },
+  themeToggleText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#FF6F00',
+  },
+  keyboardView: {
+    flex: 1,
+    width: '100%',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 36,
+  },
+  graphicSection: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 80,
+  },
+  logoGradient: {
+    width: 80,
+    height: 80,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+    boxShadow: '0 0 20px rgba(255, 111, 0, 0.3)',
+  },
+  logoEmoji: {
+    fontSize: 38,
   },
   logoText: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: '#ffffff',
+    fontSize: 32,
+    fontWeight: '800',
     letterSpacing: -0.5,
-    marginBottom: 8,
+    marginBottom: 6,
   },
   tagline: {
-    fontSize: 14,
-    color: '#94a3b8',
+    fontSize: 13,
     textAlign: 'center',
-    lineHeight: 20,
+    fontWeight: '500',
   },
-  inputSection: {
+  cardContainer: {
+    width: '100%',
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    overflow: 'hidden',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: -10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  blurCard: {
+    paddingTop: 36,
+    paddingBottom: Platform.OS === 'ios' ? 48 : 36,
+    paddingHorizontal: 28,
+  },
+  formContainer: {
     width: '100%',
   },
   label: {
-    fontSize: 14,
-    color: '#e2e8f0',
-    fontWeight: '600',
-    marginBottom: 10,
+    fontSize: 13,
+    fontWeight: 'bold',
+    marginBottom: 12,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 0.8,
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 14,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
     paddingHorizontal: 16,
     height: 56,
   },
   prefix: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#ffffff',
+    fontWeight: 'bold',
     marginRight: 8,
   },
   input: {
     flex: 1,
     fontSize: 16,
-    color: '#ffffff',
     height: '100%',
-  },
+    padding: 0,
+    borderWidth: 0,
+    outlineStyle: 'none', // fixes blue outlines in browsers
+  } as any,
   otpInput: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 14,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
     height: 56,
     fontSize: 22,
-    color: '#ffffff',
     textAlign: 'center',
-    letterSpacing: 8,
-    fontWeight: '700',
-    paddingHorizontal: 16,
-  },
+    letterSpacing: 6,
+    fontWeight: 'bold',
+    outlineStyle: 'none',
+  } as any,
   infoText: {
-    fontSize: 12,
+    fontSize: 11.5,
     color: '#64748b',
     marginTop: 10,
     lineHeight: 16,
@@ -356,23 +465,18 @@ const styles = StyleSheet.create({
   },
   timerText: {
     fontSize: 13,
-    color: '#94a3b8',
-  },
-  boldTimer: {
-    fontWeight: '600',
-    color: '#10b981',
   },
   resendText: {
     fontSize: 13,
-    fontWeight: '600',
-    color: '#10b981',
+    fontWeight: 'bold',
   },
   primaryButton: {
     width: '100%',
     height: 56,
-    borderRadius: 14,
+    borderRadius: 16,
     overflow: 'hidden',
     marginTop: 10,
+    boxShadow: '0 0 15px rgba(255, 111, 0, 0.4)',
   },
   gradientButton: {
     flex: 1,
@@ -382,15 +486,101 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#ffffff',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: 'bold',
+    letterSpacing: 0.5,
   },
   backButton: {
     alignItems: 'center',
-    marginTop: 16,
-    paddingVertical: 8,
+    marginTop: 18,
+    paddingVertical: 4,
   },
   backButtonText: {
-    color: '#94a3b8',
     fontSize: 13,
+    fontWeight: '600',
+  },
+  
+  // Custom Web-compatible Location Permission prompt
+  promptBg: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 999,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 15, 8, 0.4)',
+    padding: 24,
+  },
+  promptContainer: {
+    width: '90%',
+    maxWidth: 340,
+    borderRadius: 24,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+    overflow: 'hidden',
+    alignItems: 'center',
+  },
+  promptIconWrapper: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: 'rgba(255, 111, 0, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  promptIcon: {
+    fontSize: 28,
+  },
+  promptTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  promptDesc: {
+    fontSize: 13,
+    color: '#94a3b8',
+    textAlign: 'center',
+    lineHeight: 18,
+    marginBottom: 24,
+  },
+  promptActions: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+  promptBtnSecondary: {
+    flex: 1,
+    height: 48,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  promptBtnTextSecondary: {
+    color: '#cbd5e1',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  promptBtnPrimary: {
+    flex: 1,
+    height: 48,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  promptGradient: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  promptBtnTextPrimary: {
+    color: '#ffffff',
+    fontWeight: 'bold',
+    fontSize: 14,
   },
 });

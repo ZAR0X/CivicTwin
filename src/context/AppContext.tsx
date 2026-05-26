@@ -21,6 +21,8 @@ interface AppContextType {
   addReport: (report: Omit<Report, 'id' | 'date' | 'upvotes' | 'status'>) => void;
   verifyReport: (reportId: string) => void;
   userRank: number;
+  theme: 'light' | 'dark';
+  toggleTheme: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -28,6 +30,11 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [reports, setReports] = useState<Report[]>(MOCK_REPORTS);
   const [userPoints, setUserPoints] = useState(120); // Starting points for demo
+  const [theme, setTheme] = useState<'light' | 'dark'>('light'); // Default to light theme
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+  };
 
   const addReport = (newReportData: Omit<Report, 'id' | 'date' | 'upvotes' | 'status'>) => {
     const newReport: Report = {
@@ -57,7 +64,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const userRank = userPoints > 200 ? 2 : userPoints > 150 ? 4 : 5;
 
   return (
-    <AppContext.Provider value={{ reports, userPoints, addReport, verifyReport, userRank }}>
+    <AppContext.Provider value={{ reports, userPoints, addReport, verifyReport, userRank, theme, toggleTheme }}>
       {children}
     </AppContext.Provider>
   );
