@@ -23,7 +23,7 @@ interface Contributor {
 }
 
 export default function LeaderboardScreen() {
-  const { userPoints, theme } = useApp();
+  const { userPoints, theme, userName } = useApp();
   const insets = useSafeAreaInsets();
 
   const isDark = theme === 'dark';
@@ -43,7 +43,7 @@ export default function LeaderboardScreen() {
 
   const MOCK_LEADERBOARD: Contributor[] = [
     { rank: 1, name: 'Ananya Sharma', points: 340, reportsCount: 14 },
-    { rank: 2, name: 'You (Bhopal Citizen)', points: userPoints, reportsCount: 5, isCurrentUser: true },
+    { rank: 2, name: userName || 'You (Bhopal Citizen)', points: userPoints, reportsCount: 5, isCurrentUser: true },
     { rank: 3, name: 'Rajesh Verma', points: 210, reportsCount: 9 },
     { rank: 4, name: 'Amit Gond', points: 180, reportsCount: 7 },
     { rank: 5, name: 'Siddharth Rao', points: 145, reportsCount: 4 },

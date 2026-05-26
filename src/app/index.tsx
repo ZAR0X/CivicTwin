@@ -21,6 +21,7 @@ import { Feather, Ionicons } from '@expo/vector-icons';
 import { getMapHtml, BHOPAL_COORDINATES } from '@/constants/mapHtml';
 import { useApp, Report } from '@/context/AppContext';
 import { router } from 'expo-router';
+import { apiService } from '@/services/apiService';
 
 export default function HomeScreen() {
   const { theme, toggleTheme, reports, userPoints, addReport, verifyReport } = useApp();
@@ -53,7 +54,7 @@ export default function HomeScreen() {
   const webViewRef = useRef<WebView>(null);
   const iframeRef = useRef<any>(null);
 
-  const mapHtml = getMapHtml(reports);
+  const mapHtml = getMapHtml(reports, theme);
   const isDark = theme === 'dark';
 
   // Palette: Onyx (000F08), Pumpkin Spice (FF6F00), Azure Mist (F4FFFE), Electric Aqua (92E5EC)
@@ -109,6 +110,23 @@ export default function HomeScreen() {
       `);
     }
   }, [theme]);
+
+  // Listen to messages from the map (for Web Platform)
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+
+    const listener = (event: any) => {
+      try {
+        const data = JSON.parse(event.data);
+        handleMessage(data);
+      } catch (e) {}
+    };
+
+    window.addEventListener('message', listener);
+    return () => {
+      window.removeEventListener('message', listener);
+    };
+  }, []);
 
   // Handle Map Mode changes
   const handleToggleMapMode = () => {
@@ -216,45 +234,22 @@ export default function HomeScreen() {
     }, 1800);
   };
 
-  const handleRunAiAnalysis = () => {
+  const handleRunAiAnalysis = async () => {
     if (!cameraCaptured) return;
     setAiLoading(true);
 
-    setTimeout(() => {
+    try {
+      // Pass base64 photo placeholder to simulate local or server-side analysis
+      const base64Placeholder = "data:image/jpeg;base64,mock_base64_data_here";
+      const result = await apiService.runGeminiAnalysis(base64Placeholder, typedMessage);
+      
       setAiLoading(false);
       setAiAnalysisComplete(true);
-
-      const lowerText = typedMessage.toLowerCase();
-      if (lowerText.includes('water') || lowerText.includes('sewage') || lowerText.includes('leak')) {
-        setMockedAiResult({
-          category: 'Water',
-          severity: 8,
-          description: 'Visual evidence shows municipal water main leak flooding road. Secondary risk: local flooding.',
-          department: 'Water Works Department',
-        });
-      } else if (lowerText.includes('garbage') || lowerText.includes('smells') || lowerText.includes('dustbin')) {
-        setMockedAiResult({
-          category: 'Sanitation',
-          severity: 6,
-          description: 'Overflowing community trash bin. Piles of organic garbage leaking onto footpaths.',
-          department: 'Sanitation Department',
-        });
-      } else if (lowerText.includes('electric') || lowerText.includes('wire') || lowerText.includes('light')) {
-        setMockedAiResult({
-          category: 'Utility',
-          severity: 9,
-          description: 'Fallen live wire near public area. High probability of electric shock hazard.',
-          department: 'MPEB (Electricity Board)',
-        });
-      } else {
-        setMockedAiResult({
-          category: 'Roads',
-          severity: 7,
-          description: 'Deep road cavity (pothole) measuring ~15cm deep. High risk of two-wheeler accidents.',
-          department: 'Municipal Corporation (PWD)',
-        });
-      }
-    }, 2000);
+      setMockedAiResult(result);
+    } catch (e) {
+      console.error("[CivicTwin HomeScreen] Gemini AI analysis failed:", e);
+      setAiLoading(false);
+    }
   };
 
   const handleSubmitReport = () => {
@@ -297,20 +292,13 @@ export default function HomeScreen() {
             srcDoc={mapHtml}
             style={{ border: 'none', width: '100%', height: '100%' }}
             onLoad={() => {
-              const listener = (event: any) => {
-                try {
-                  const data = JSON.parse(event.data);
-                  handleMessage(data);
-                } catch (e) {}
-              };
-              window.addEventListener('message', listener);
+              // Sync current theme style directly when iframe finishes loading
               setTimeout(() => {
                 iframeRef.current?.contentWindow?.postMessage(
                   JSON.stringify({ type: 'setMapTheme', theme: theme }),
                   '*'
                 );
-              }, 1000);
-              return () => window.removeEventListener('message', listener);
+              }, 100);
             }}
           />
         ) : (
@@ -360,8 +348,8 @@ export default function HomeScreen() {
               placeholderTextColor={isDark ? '#64748b' : '#94a3b8'}
               editable={false}
             />
-            <TouchableOpacity style={styles.micBtn} onPress={toggleTheme}>
-              <Feather name={isDark ? "sun" : "moon"} size={18} color={colors.accent} />
+            <TouchableOpacity style={styles.micBtn} onPress={() => router.push('/settings')}>
+              <Feather name="settings" size={18} color={colors.accent} />
             </TouchableOpacity>
           </BlurView>
 

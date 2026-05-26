@@ -14,6 +14,28 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import { useApp } from '@/context/AppContext';
 
+interface GlassContainerProps {
+  children: React.ReactNode;
+  style: any;
+  intensity: number;
+  tint: 'light' | 'dark';
+}
+
+function GlassContainer({ children, style, intensity, tint }: GlassContainerProps) {
+  if (Platform.OS === 'web') {
+    return (
+      <View style={[style, { backdropFilter: `blur(${intensity / 2}px) saturate(180%)`, WebkitBackdropFilter: `blur(${intensity / 2}px) saturate(180%)` }]}>
+        {children}
+      </View>
+    );
+  }
+  return (
+    <BlurView intensity={intensity} tint={tint} style={style}>
+      {children}
+    </BlurView>
+  );
+}
+
 interface LoginScreenProps {
   onLoginSuccess: () => void;
 }
@@ -153,6 +175,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.keyboardView}
+        enabled={Platform.OS !== 'web'}
       >
         {/* Top Section with beautiful Graphic / Logo */}
         <Animated.View style={[
@@ -182,7 +205,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
             transform: [{ translateY: cardSlideAnim }],
           }
         ]}>
-          <BlurView intensity={isDark ? 20 : 40} tint={isDark ? 'dark' : 'light'} style={styles.blurCard}>
+          <GlassContainer intensity={isDark ? 20 : 40} tint={isDark ? 'dark' : 'light'} style={styles.blurCard}>
             
             {!isOtpSent ? (
               /* Phone Input Form */
@@ -291,14 +314,14 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
               </View>
             )}
 
-          </BlurView>
+          </GlassContainer>
         </Animated.View>
       </KeyboardAvoidingView>
 
       {/* Custom Cross-Platform Web-Compatible Permission Prompt */}
       {showLocationPrompt && (
         <View style={styles.promptBg}>
-          <BlurView intensity={50} tint="dark" style={styles.promptContainer}>
+          <GlassContainer intensity={50} tint="dark" style={styles.promptContainer}>
             <View style={styles.promptIconWrapper}>
               <Text style={styles.promptIcon}>📍</Text>
             </View>
@@ -328,7 +351,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
                 </LinearGradient>
               </TouchableOpacity>
             </View>
-          </BlurView>
+          </GlassContainer>
         </View>
       )}
     </View>

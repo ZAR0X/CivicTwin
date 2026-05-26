@@ -224,7 +224,7 @@ export const MOCK_REPORTS = [
   },
 ];
 
-export const getMapHtml = (reports: typeof MOCK_REPORTS) => {
+export const getMapHtml = (reports: typeof MOCK_REPORTS, theme: 'light' | 'dark' = 'light') => {
   const geojson = {
     type: 'FeatureCollection',
     features: reports.map((r) => ({
@@ -254,8 +254,8 @@ export const getMapHtml = (reports: typeof MOCK_REPORTS) => {
   <meta charset="utf-8" />
   <title>CivicTwin Bhopal Map</title>
   <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
-  <script src="https://unpkg.com/maplibre-gl@4.1.2/dist/maplibre-gl.js"></script>
-  <link href="https://unpkg.com/maplibre-gl@4.1.2/dist/maplibre-gl.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/4.1.2/maplibre-gl.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/4.1.2/maplibre-gl.css" rel="stylesheet" />
   <style>
     body { margin: 0; padding: 0; background-color: #0b0f19; overflow: hidden; }
     #map { position: absolute; top: 0; bottom: 0; width: 100%; height: 100%; }
@@ -304,161 +304,172 @@ export const getMapHtml = (reports: typeof MOCK_REPORTS) => {
   <div id="map"></div>
 
   <script>
-    // Initialize the MapLibre Map
-    const map = new maplibregl.Map({
-      container: 'map',
-      style: 'https://tiles.openfreemap.org/styles/liberty', // Liberty street style
-      center: [77.4126, 23.2599], // Bhopal center
-      zoom: 12.8,
-      pitch: 60, // 3D perspective
-      bearing: -15,
-      dragRotate: true,
-      maxZoom: 18,
-      minZoom: 10
-    });
-
-    map.on('rotate', () => {
-      sendToRN({
-        type: 'MAP_ROTATE',
-        bearing: map.getBearing()
-      });
-    });
-
+    let map;
     const geojsonData = ${JSON.stringify(geojson)};
     let activeMarkers = [];
     let isSatelliteVisible = 'none';
-    window.currentTheme = 'light';
+    window.currentTheme = '${theme}';
 
-    map.on('style.load', () => {
-      // Add ESRI Satellite Source and Layer
-      if (!map.getSource('satellite')) {
-        map.addSource('satellite', {
-          type: 'raster',
-          tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
-          tileSize: 256
-        });
+    function initMap() {
+      if (!window.maplibregl) {
+        setTimeout(initMap, 50);
+        return;
       }
 
-      if (!map.getLayer('satellite-layer')) {
-        map.addLayer({
-          id: 'satellite-layer',
-          type: 'raster',
-          source: 'satellite',
-          layout: { visibility: isSatelliteVisible }
-        });
-      }
+      const styleUrl = window.currentTheme === 'light' 
+        ? 'https://tiles.openfreemap.org/styles/bright' 
+        : 'https://tiles.openfreemap.org/styles/dark';
 
-      // Add Heatmap Source
-      if (!map.getSource('reports')) {
-        map.addSource('reports', {
-          type: 'geojson',
-          data: geojsonData
-        });
-      }
+      map = new maplibregl.Map({
+        container: 'map',
+        style: styleUrl,
+        center: [77.4126, 23.2599], // Bhopal center
+        zoom: 12.8,
+        pitch: 60, // 3D perspective
+        bearing: -15,
+        dragRotate: true,
+        maxZoom: 18,
+        minZoom: 10
+      });
 
-      if (!map.getLayer('reports-heatmap')) {
-        // Add Snapchat-style Heatmap Layer
-        map.addLayer({
-          id: 'reports-heatmap',
-          type: 'heatmap',
-          source: 'reports',
-          maxzoom: 14.5,
-          paint: {
-            // Increase weight based on severity & upvotes
-            'heatmap-weight': [
-              'interpolate',
-              ['linear'],
-              ['get', 'severity'],
-              1, 0.2,
-              10, 1.5
-            ],
-            // Intensity multiplier
-            'heatmap-intensity': [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              10, 1,
-              14.5, 3
-            ],
-            // Color ramp (Snapchat thermal styling)
-            'heatmap-color': [
-              'interpolate',
-              ['linear'],
-              ['heatmap-value'],
-              0, 'rgba(0, 0, 255, 0)',
-              0.2, 'rgba(146, 229, 236, 0.5)',  // Electric Aqua
-              0.4, 'rgba(56, 189, 248, 0.7)',
-              0.6, 'rgba(234, 179, 8, 0.85)',   // Yellow
-              0.8, 'rgba(249, 115, 22, 0.95)',  // Orange
-              1, 'rgba(255, 111, 0, 1)'        // Pumpkin Spice
-            ],
-            // Radius based on zoom
-            'heatmap-radius': [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              10, 12,
-              14.5, 28
-            ],
-            // Fade out heatmap when zooming in
-            'heatmap-opacity': [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              13.5, 1.0,
-              14.5, 0.0
-            ]
-          }
-        });
-      }
-
-      // Add 3D building extrusion dynamically with fallback heights
-      if (!map.getLayer('3d-buildings')) {
-        const buildingColor = window.currentTheme === 'light' ? '#cbd5e1' : '#1e293b';
-        map.addLayer({
-          'id': '3d-buildings',
-          'source': 'openmaptiles',
-          'source-layer': 'building',
-          'type': 'fill-extrusion',
-          'minzoom': 15,
-          'paint': {
-            'fill-extrusion-color': buildingColor,
-            'fill-extrusion-height': ['coalesce', ['get', 'render_height'], 18],
-            'fill-extrusion-base': ['coalesce', ['get', 'render_min_height'], 0],
-            'fill-extrusion-opacity': 0.75
-          }
-        });
-      }
-
-      // Render marker thumbnails when zoomed in (clusters dissolve)
-      updateZoomMarkers();
-      
-      // Update markers on zoom and move
-      map.off('zoom', updateZoomMarkers);
-      map.off('moveend', updateZoomMarkers);
-      map.on('zoom', updateZoomMarkers);
-      map.on('moveend', updateZoomMarkers);
- 
-      // Handle raw map clicks to report a new location
-      map.off('click');
-      map.on('click', (e) => {
-        // Prevent click if clicking a marker
-        if (e.originalEvent.target.classList.contains('custom-marker')) return;
-        
+      map.on('rotate', () => {
         sendToRN({
-          type: 'MAP_CLICK',
-          coordinates: {
-            latitude: e.lngLat.lat,
-            longitude: e.lngLat.lng
-          }
+          type: 'MAP_ROTATE',
+          bearing: map.getBearing()
         });
       });
-    });
+
+      map.on('style.load', () => {
+        // Add ESRI Satellite Source and Layer
+        if (!map.getSource('satellite')) {
+          map.addSource('satellite', {
+            type: 'raster',
+            tiles: ['https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}'],
+            tileSize: 256
+          });
+        }
+
+        if (!map.getLayer('satellite-layer')) {
+          map.addLayer({
+            id: 'satellite-layer',
+            type: 'raster',
+            source: 'satellite',
+            layout: { visibility: isSatelliteVisible }
+          });
+        }
+
+        // Add Heatmap Source
+        if (!map.getSource('reports')) {
+          map.addSource('reports', {
+            type: 'geojson',
+            data: geojsonData
+          });
+        }
+
+        if (!map.getLayer('reports-heatmap')) {
+          // Add Snapchat-style Heatmap Layer
+          map.addLayer({
+            id: 'reports-heatmap',
+            type: 'heatmap',
+            source: 'reports',
+            maxzoom: 14.5,
+            paint: {
+              // Increase weight based on severity & upvotes
+              'heatmap-weight': [
+                'interpolate',
+                ['linear'],
+                ['get', 'severity'],
+                1, 0.2,
+                10, 1.5
+              ],
+              // Intensity multiplier
+              'heatmap-intensity': [
+                'interpolate',
+                ['linear'],
+                ['zoom'],
+                10, 1,
+                14.5, 3
+              ],
+              // Color ramp (Snapchat thermal styling)
+              'heatmap-color': [
+                'interpolate',
+                ['linear'],
+                ['heatmap-value'],
+                0, 'rgba(0, 0, 255, 0)',
+                0.2, 'rgba(146, 229, 236, 0.5)',  // Electric Aqua
+                0.4, 'rgba(56, 189, 248, 0.7)',
+                0.6, 'rgba(234, 179, 8, 0.85)',   // Yellow
+                0.8, 'rgba(249, 115, 22, 0.95)',  // Orange
+                1, 'rgba(255, 111, 0, 1)'        // Pumpkin Spice
+              ],
+              // Radius based on zoom
+              'heatmap-radius': [
+                'interpolate',
+                ['linear'],
+                ['zoom'],
+                10, 12,
+                14.5, 28
+              ],
+              // Fade out heatmap when zooming in
+              'heatmap-opacity': [
+                'interpolate',
+                ['linear'],
+                ['zoom'],
+                13.5, 1.0,
+                14.5, 0.0
+              ]
+            }
+          });
+        }
+
+        // Add 3D building extrusion dynamically with fallback heights
+        if (!map.getLayer('3d-buildings')) {
+          const buildingColor = window.currentTheme === 'light' ? '#cbd5e1' : '#1e293b';
+          map.addLayer({
+            'id': '3d-buildings',
+            'source': 'openmaptiles',
+            'source-layer': 'building',
+            'type': 'fill-extrusion',
+            'minzoom': 15,
+            'paint': {
+              'fill-extrusion-color': buildingColor,
+              'fill-extrusion-height': ['coalesce', ['get', 'render_height'], 18],
+              'fill-extrusion-base': ['coalesce', ['get', 'render_min_height'], 0],
+              'fill-extrusion-opacity': 0.75
+            }
+          });
+        }
+
+        // Render marker thumbnails when zoomed in (clusters dissolve)
+        updateZoomMarkers();
+        
+        // Update markers on zoom and move
+        map.off('zoom', updateZoomMarkers);
+        map.off('moveend', updateZoomMarkers);
+        map.on('zoom', updateZoomMarkers);
+        map.on('moveend', updateZoomMarkers);
+   
+        // Handle raw map clicks to report a new location
+        map.off('click');
+        map.on('click', (e) => {
+          // Prevent click if clicking a marker
+          if (e.originalEvent.target.classList.contains('custom-marker')) return;
+          
+          sendToRN({
+            type: 'MAP_CLICK',
+            coordinates: {
+              latitude: e.lngLat.lat,
+              longitude: e.lngLat.lng
+            }
+          });
+        });
+      });
+    }
 
     // Toggle between 3D Vector map and Satellite mode
     window.toggleMapMode = (mode) => {
       isSatelliteVisible = mode === 'satellite' ? 'visible' : 'none';
-      if (map.getLayer('satellite-layer')) {
+      if (map && map.getLayer('satellite-layer')) {
         map.setLayoutProperty('satellite-layer', 'visibility', isSatelliteVisible);
       }
     };
@@ -469,39 +480,47 @@ export const getMapHtml = (reports: typeof MOCK_REPORTS) => {
       const styleUrl = themeName === 'light' 
         ? 'https://tiles.openfreemap.org/styles/bright' 
         : 'https://tiles.openfreemap.org/styles/dark';
-      map.setStyle(styleUrl);
+      if (map) {
+        map.setStyle(styleUrl);
+      }
     };
 
     // Fly to coordinates
     window.flyToLocation = (lat, lng, zoom = 15.5) => {
-      map.flyTo({
-        center: [lng, lat],
-        zoom: zoom,
-        essential: true,
-        pitch: 60,
-        speed: 1.2
-      });
+      if (map) {
+        map.flyTo({
+          center: [lng, lat],
+          zoom: zoom,
+          essential: true,
+          pitch: 60,
+          speed: 1.2
+        });
+      }
     };
 
     let isRotationLocked = false;
     // Reset North bearing
     window.resetNorth = () => {
-      map.easeTo({
-        bearing: 0,
-        pitch: 60,
-        duration: 800
-      });
+      if (map) {
+        map.easeTo({
+          bearing: 0,
+          pitch: 60,
+          duration: 800
+        });
+      }
     };
 
     // Toggle rotation lock
     window.toggleRotationLock = (locked) => {
       isRotationLocked = locked;
-      if (isRotationLocked) {
-        map.dragRotate.disable();
-        map.touchZoomRotate.disableRotation();
-      } else {
-        map.dragRotate.enable();
-        map.touchZoomRotate.enableRotation();
+      if (map) {
+        if (isRotationLocked) {
+          map.dragRotate.disable();
+          map.touchZoomRotate.disableRotation();
+        } else {
+          map.dragRotate.enable();
+          map.touchZoomRotate.enableRotation();
+        }
       }
     };
 
@@ -519,7 +538,7 @@ export const getMapHtml = (reports: typeof MOCK_REPORTS) => {
       // Update geojsonData global variable
       geojsonData.features = geojson.features;
       
-      if (map.getSource('reports')) {
+      if (map && map.getSource('reports')) {
         map.getSource('reports').setData(geojson);
       }
       updateZoomMarkers();
@@ -557,6 +576,7 @@ export const getMapHtml = (reports: typeof MOCK_REPORTS) => {
 
     // Toggle markers based on zoom level (visible only at close zoom)
     function updateZoomMarkers() {
+      if (!map) return;
       const zoom = map.getZoom();
 
       // Clear existing markers
@@ -613,6 +633,8 @@ export const getMapHtml = (reports: typeof MOCK_REPORTS) => {
         });
       }
     }
+
+    document.addEventListener('DOMContentLoaded', initMap);
   </script>
 </body>
 </html>
