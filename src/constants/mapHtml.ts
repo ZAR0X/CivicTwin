@@ -307,7 +307,7 @@ export const getMapHtml = (reports: typeof MOCK_REPORTS) => {
     // Initialize the MapLibre Map
     const map = new maplibregl.Map({
       container: 'map',
-      style: 'https://tiles.openfreemap.org/styles/3d', // 3D openfreemap style
+      style: 'https://tiles.openfreemap.org/styles/liberty', // Liberty street style
       center: [77.4126, 23.2599], // Bhopal center
       zoom: 12.8,
       pitch: 60, // 3D perspective
@@ -319,90 +319,119 @@ export const getMapHtml = (reports: typeof MOCK_REPORTS) => {
 
     const geojsonData = ${JSON.stringify(geojson)};
     let activeMarkers = [];
+    let isSatelliteVisible = 'none';
 
-    map.on('load', () => {
+    map.on('style.load', () => {
       // Add ESRI Satellite Source and Layer
-      map.addSource('satellite', {
-        type: 'raster',
-        tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
-        tileSize: 256
-      });
+      if (!map.getSource('satellite')) {
+        map.addSource('satellite', {
+          type: 'raster',
+          tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+          tileSize: 256
+        });
+      }
 
-      map.addLayer({
-        id: 'satellite-layer',
-        type: 'raster',
-        source: 'satellite',
-        layout: { visibility: 'none' }
-      });
+      if (!map.getLayer('satellite-layer')) {
+        map.addLayer({
+          id: 'satellite-layer',
+          type: 'raster',
+          source: 'satellite',
+          layout: { visibility: isSatelliteVisible }
+        });
+      }
 
       // Add Heatmap Source
-      map.addSource('reports', {
-        type: 'geojson',
-        data: geojsonData
-      });
+      if (!map.getSource('reports')) {
+        map.addSource('reports', {
+          type: 'geojson',
+          data: geojsonData
+        });
+      }
 
-      // Add Snapchat-style Heatmap Layer
-      map.addLayer({
-        id: 'reports-heatmap',
-        type: 'heatmap',
-        source: 'reports',
-        maxzoom: 14.5,
-        paint: {
-          // Increase weight based on severity & upvotes
-          'heatmap-weight': [
-            'interpolate',
-            ['linear'],
-            ['get', 'severity'],
-            1, 0.2,
-            10, 1.5
-          ],
-          // Intensity multiplier
-          'heatmap-intensity': [
-            'interpolate',
-            ['linear'],
-            ['zoom'],
-            10, 1,
-            14.5, 3
-          ],
-          // Color ramp (Snapchat thermal styling)
-          'heatmap-color': [
-            'interpolate',
-            ['linear'],
-            ['heatmap-value'],
-            0, 'rgba(0, 0, 255, 0)',
-            0.2, 'rgba(56, 189, 248, 0.5)',  // Ice blue
-            0.4, 'rgba(16, 185, 129, 0.7)',  // Green
-            0.6, 'rgba(234, 179, 8, 0.85)',   // Yellow
-            0.8, 'rgba(249, 115, 22, 0.95)',  // Orange
-            1, 'rgba(239, 68, 68, 1)'        // Red hot
-          ],
-          // Radius based on zoom
-          'heatmap-radius': [
-            'interpolate',
-            ['linear'],
-            ['zoom'],
-            10, 12,
-            14.5, 28
-          ],
-          // Fade out heatmap when zooming in
-          'heatmap-opacity': [
-            'interpolate',
-            ['linear'],
-            ['zoom'],
-            13.5, 1.0,
-            14.5, 0.0
-          ]
-        }
-      });
+      if (!map.getLayer('reports-heatmap')) {
+        // Add Snapchat-style Heatmap Layer
+        map.addLayer({
+          id: 'reports-heatmap',
+          type: 'heatmap',
+          source: 'reports',
+          maxzoom: 14.5,
+          paint: {
+            // Increase weight based on severity & upvotes
+            'heatmap-weight': [
+              'interpolate',
+              ['linear'],
+              ['get', 'severity'],
+              1, 0.2,
+              10, 1.5
+            ],
+            // Intensity multiplier
+            'heatmap-intensity': [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              10, 1,
+              14.5, 3
+            ],
+            // Color ramp (Snapchat thermal styling)
+            'heatmap-color': [
+              'interpolate',
+              ['linear'],
+              ['heatmap-value'],
+              0, 'rgba(0, 0, 255, 0)',
+              0.2, 'rgba(146, 229, 236, 0.5)',  // Electric Aqua
+              0.4, 'rgba(56, 189, 248, 0.7)',
+              0.6, 'rgba(234, 179, 8, 0.85)',   // Yellow
+              0.8, 'rgba(249, 115, 22, 0.95)',  // Orange
+              1, 'rgba(255, 111, 0, 1)'        // Pumpkin Spice
+            ],
+            // Radius based on zoom
+            'heatmap-radius': [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              10, 12,
+              14.5, 28
+            ],
+            // Fade out heatmap when zooming in
+            'heatmap-opacity': [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              13.5, 1.0,
+              14.5, 0.0
+            ]
+          }
+        });
+      }
+
+      // Add 3D building extrusion dynamically
+      if (!map.getLayer('3d-buildings')) {
+        map.addLayer({
+          'id': '3d-buildings',
+          'source': 'openmaptiles',
+          'source-layer': 'building',
+          'type': 'fill-extrusion',
+          'minzoom': 15,
+          'paint': {
+            'fill-extrusion-color': '#aaa',
+            'fill-extrusion-height': ['get', 'render_height'],
+            'fill-extrusion-base': ['get', 'render_min_height'],
+            'fill-extrusion-opacity': 0.6
+          }
+        });
+      }
 
       // Render marker thumbnails when zoomed in (clusters dissolve)
       updateZoomMarkers();
       
       // Update markers on zoom and move
+      map.off('zoom', updateZoomMarkers);
+      map.off('moveend', updateZoomMarkers);
       map.on('zoom', updateZoomMarkers);
       map.on('moveend', updateZoomMarkers);
-
+ 
       // Handle raw map clicks to report a new location
+      map.off('click');
       map.on('click', (e) => {
         // Prevent click if clicking a marker
         if (e.originalEvent.target.classList.contains('custom-marker')) return;
@@ -419,10 +448,9 @@ export const getMapHtml = (reports: typeof MOCK_REPORTS) => {
 
     // Toggle between 3D Vector map and Satellite mode
     window.toggleMapMode = (mode) => {
-      if (mode === 'satellite') {
-        map.setLayoutProperty('satellite-layer', 'visibility', 'visible');
-      } else {
-        map.setLayoutProperty('satellite-layer', 'visibility', 'none');
+      isSatelliteVisible = mode === 'satellite' ? 'visible' : 'none';
+      if (map.getLayer('satellite-layer')) {
+        map.setLayoutProperty('satellite-layer', 'visibility', isSatelliteVisible);
       }
     };
 
@@ -430,7 +458,7 @@ export const getMapHtml = (reports: typeof MOCK_REPORTS) => {
     window.setMapTheme = (themeName) => {
       const styleUrl = themeName === 'light' 
         ? 'https://tiles.openfreemap.org/styles/bright' 
-        : 'https://tiles.openfreemap.org/styles/3d';
+        : 'https://tiles.openfreemap.org/styles/dark';
       map.setStyle(styleUrl);
     };
 

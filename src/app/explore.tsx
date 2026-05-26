@@ -31,10 +31,10 @@ export default function LeaderboardScreen() {
     bgGradient: isDark ? ['#000F08', '#01120a', '#000000'] : ['#F4FFFE', '#e6fcf9', '#ffffff'],
     text: isDark ? '#ffffff' : '#000F08',
     textSecondary: isDark ? '#92E5EC' : '#64748b',
-    cardBg: isDark ? 'rgba(0, 15, 8, 0.75)' : '#ffffff',
-    cardBorder: isDark ? 'rgba(146, 229, 236, 0.15)' : 'rgba(0, 15, 8, 0.05)',
-    rowBg: isDark ? 'rgba(146, 229, 236, 0.03)' : '#ffffff',
-    rowBorder: isDark ? 'rgba(146, 229, 236, 0.08)' : 'rgba(0, 15, 8, 0.04)',
+    cardBg: isDark ? 'rgba(0, 15, 8, 0.72)' : 'rgba(255, 255, 255, 0.75)',
+    cardBorder: isDark ? 'rgba(146, 229, 236, 0.15)' : 'rgba(0, 15, 8, 0.08)',
+    rowBg: isDark ? 'rgba(146, 229, 236, 0.02)' : 'rgba(255, 255, 255, 0.45)',
+    rowBorder: isDark ? 'rgba(146, 229, 236, 0.06)' : 'rgba(0, 15, 8, 0.04)',
     accentOrange: '#FF6F00',
     electricAqua: '#92E5EC',
   };
@@ -116,7 +116,7 @@ export default function LeaderboardScreen() {
       />
       
       {/* Background radial glow */}
-      <View style={[styles.glowBlob, { backgroundColor: palette.electricAqua }]} />
+      <View pointerEvents="none" style={[styles.glowBlob, { backgroundColor: palette.electricAqua }]} />
 
       <ScrollView 
         contentContainerStyle={[
@@ -230,6 +230,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.03,
     shadowRadius: 12,
     elevation: 3,
+    overflow: 'hidden',
+    ...Platform.select({
+      web: {
+        backdropFilter: 'blur(20px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+      } as any,
+    }),
   },
   cardPadding: {
     padding: 20,
@@ -310,6 +317,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.03,
     shadowRadius: 12,
     elevation: 3,
+    ...Platform.select({
+      web: {
+        backdropFilter: 'blur(20px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+      } as any,
+    }),
   },
   listRow: {
     flexDirection: 'row',
