@@ -20,11 +20,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { getMapHtml, BHOPAL_COORDINATES } from '@/constants/mapHtml';
 import { useApp, Report } from '@/context/AppContext';
+import { router } from 'expo-router';
 
 export default function HomeScreen() {
   const { theme, toggleTheme, reports, userPoints, addReport, verifyReport } = useApp();
   const [mapMode, setMapMode] = useState<'3d' | 'satellite'>('3d');
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+  const [mapBearing, setMapBearing] = useState(0);
+  const [rotationLocked, setRotationLocked] = useState(false);
   
   // Reporting state
   const [isReportModalVisible, setIsReportModalVisible] = useState(false);
@@ -56,10 +59,10 @@ export default function HomeScreen() {
   // Palette: Onyx (000F08), Pumpkin Spice (FF6F00), Azure Mist (F4FFFE), Electric Aqua (92E5EC)
   const colors = {
     bg: isDark ? '#000F08' : '#F4FFFE',
-    cardBg: isDark ? '#000F08' : '#ffffff',
+    cardBg: isDark ? 'rgba(18, 18, 20, 0.48)' : 'rgba(255, 255, 255, 0.55)', // Translucent card background matching arvin!
     text: isDark ? '#ffffff' : '#000F08',
     textSecondary: isDark ? '#92E5EC' : '#64748b',
-    border: isDark ? 'rgba(146, 229, 236, 0.1)' : 'rgba(0, 15, 8, 0.05)',
+    border: isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 15, 8, 0.08)', // Thin borders like arvin
     accent: '#FF6F00',
     electricAqua: '#92E5EC',
     shadow: 'rgba(0, 15, 8, 0.04)',
@@ -135,6 +138,60 @@ export default function HomeScreen() {
       setClickCoords(data.coordinates);
       setIsReportModalVisible(true);
       resetReportFlow();
+    } else if (data.type === 'MAP_ROTATE') {
+      setMapBearing(data.bearing);
+    }
+  };
+
+  const handleResetNorth = () => {
+    if (Platform.OS === 'web') {
+      iframeRef.current?.contentWindow?.postMessage(
+        JSON.stringify({ type: 'resetNorth' }),
+        '*'
+      );
+    } else {
+      webViewRef.current?.injectJavaScript(`
+        if (window.resetNorth) {
+          window.resetNorth();
+        }
+        void(0);
+      `);
+    }
+  };
+
+  const handleToggleRotationLock = () => {
+    const nextLocked = !rotationLocked;
+    setRotationLocked(nextLocked);
+    if (Platform.OS === 'web') {
+      iframeRef.current?.contentWindow?.postMessage(
+        JSON.stringify({ type: 'toggleRotationLock', locked: nextLocked }),
+        '*'
+      );
+    } else {
+      webViewRef.current?.injectJavaScript(`
+        if (window.toggleRotationLock) {
+          window.toggleRotationLock(${nextLocked});
+        }
+        void(0);
+      `);
+    }
+  };
+
+  const handleMyLocation = () => {
+    const lat = BHOPAL_COORDINATES.latitude;
+    const lng = BHOPAL_COORDINATES.longitude;
+    if (Platform.OS === 'web') {
+      iframeRef.current?.contentWindow?.postMessage(
+        JSON.stringify({ type: 'flyToLocation', lat, lng, zoom: 14.5 }),
+        '*'
+      );
+    } else {
+      webViewRef.current?.injectJavaScript(`
+        if (window.flyToLocation) {
+          window.flyToLocation(${lat}, ${lng}, 14.5);
+        }
+        void(0);
+      `);
     }
   };
 
@@ -330,10 +387,50 @@ export default function HomeScreen() {
         </View>
       </SafeAreaView>
 
-      {/* Satellite Toggle Controls */}
+      {/* Satellite, Compass, Location & Leaderboard Toggle Controls */}
       <View style={styles.mapControls}>
-        <TouchableOpacity style={[styles.circleBtn, { backgroundColor: colors.cardBg, borderColor: colors.border }]} onPress={handleToggleMapMode} activeOpacity={0.85}>
-          <Feather name={mapMode === '3d' ? 'globe' : 'map'} size={20} color={colors.text} />
+        {/* Satellite Mode Button */}
+        <TouchableOpacity 
+          style={[styles.circleBtn, { backgroundColor: colors.cardBg, borderColor: colors.border }]} 
+          onPress={handleToggleMapMode} 
+          activeOpacity={0.85}
+        >
+          <Feather name={mapMode === '3d' ? 'globe' : 'map'} size={19} color={colors.text} />
+        </TouchableOpacity>
+
+        {/* Dynamic Compass Button (Rotates based on map bearing) */}
+        <TouchableOpacity 
+          style={[styles.circleBtn, { backgroundColor: colors.cardBg, borderColor: colors.border }]} 
+          onPress={handleResetNorth} 
+          onLongPress={handleToggleRotationLock}
+          activeOpacity={0.85}
+        >
+          <Ionicons 
+            name={rotationLocked ? "compass" : "compass-outline"} 
+            size={21} 
+            color={rotationLocked ? colors.accent : colors.text} 
+            style={{
+              transform: [{ rotate: `${-mapBearing}deg` }]
+            }}
+          />
+        </TouchableOpacity>
+
+        {/* My Location Button */}
+        <TouchableOpacity 
+          style={[styles.circleBtn, { backgroundColor: colors.cardBg, borderColor: colors.border }]} 
+          onPress={handleMyLocation} 
+          activeOpacity={0.85}
+        >
+          <Feather name="navigation" size={17} color={colors.text} style={{ transform: [{ rotate: '45deg' }] }} />
+        </TouchableOpacity>
+
+        {/* Floating Leaderboard Screen Switcher */}
+        <TouchableOpacity 
+          style={[styles.circleBtn, { backgroundColor: colors.cardBg, borderColor: colors.border }]} 
+          onPress={() => router.push('/explore')} 
+          activeOpacity={0.85}
+        >
+          <Feather name="award" size={18} color={colors.text} />
         </TouchableOpacity>
       </View>
 
@@ -728,6 +825,7 @@ const styles = StyleSheet.create({
     right: 16,
     top: height * 0.18,
     zIndex: 10,
+    gap: 10, // gap between control buttons
   },
   circleBtn: {
     width: 44,
@@ -744,11 +842,11 @@ const styles = StyleSheet.create({
   },
   detailOverlay: {
     position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 90 : 100,
+    bottom: 30, // Floats cleanly at bottom center
     left: 0,
     right: 0,
     zIndex: 15,
-    paddingHorizontal: 16,
+    paddingHorizontal: 20, // Clean padding from left and right
   },
   detailCard: {
     borderRadius: 36, // Increased to 36 for extra premium rounded feel!
@@ -891,7 +989,7 @@ const styles = StyleSheet.create({
   },
   fabContainer: {
     position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 24 : 40,
+    bottom: 36, // Sits cleanly at bottom center
     left: 0,
     right: 0,
     zIndex: 10,
