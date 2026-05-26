@@ -317,9 +317,17 @@ export const getMapHtml = (reports: typeof MOCK_REPORTS) => {
       minZoom: 10
     });
 
+    map.on('rotate', () => {
+      sendToRN({
+        type: 'MAP_ROTATE',
+        bearing: map.getBearing()
+      });
+    });
+
     const geojsonData = ${JSON.stringify(geojson)};
     let activeMarkers = [];
     let isSatelliteVisible = 'none';
+    window.currentTheme = 'light';
 
     map.on('style.load', () => {
       // Add ESRI Satellite Source and Layer
@@ -404,8 +412,9 @@ export const getMapHtml = (reports: typeof MOCK_REPORTS) => {
         });
       }
 
-      // Add 3D building extrusion dynamically
+      // Add 3D building extrusion dynamically with fallback heights
       if (!map.getLayer('3d-buildings')) {
+        const buildingColor = window.currentTheme === 'light' ? '#cbd5e1' : '#1e293b';
         map.addLayer({
           'id': '3d-buildings',
           'source': 'openmaptiles',
@@ -413,10 +422,10 @@ export const getMapHtml = (reports: typeof MOCK_REPORTS) => {
           'type': 'fill-extrusion',
           'minzoom': 15,
           'paint': {
-            'fill-extrusion-color': '#aaa',
-            'fill-extrusion-height': ['get', 'render_height'],
-            'fill-extrusion-base': ['get', 'render_min_height'],
-            'fill-extrusion-opacity': 0.6
+            'fill-extrusion-color': buildingColor,
+            'fill-extrusion-height': ['coalesce', ['get', 'render_height'], 18],
+            'fill-extrusion-base': ['coalesce', ['get', 'render_min_height'], 0],
+            'fill-extrusion-opacity': 0.75
           }
         });
       }
@@ -456,6 +465,7 @@ export const getMapHtml = (reports: typeof MOCK_REPORTS) => {
 
     // Toggle map theme style
     window.setMapTheme = (themeName) => {
+      window.currentTheme = themeName;
       const styleUrl = themeName === 'light' 
         ? 'https://tiles.openfreemap.org/styles/bright' 
         : 'https://tiles.openfreemap.org/styles/dark';
@@ -471,6 +481,28 @@ export const getMapHtml = (reports: typeof MOCK_REPORTS) => {
         pitch: 60,
         speed: 1.2
       });
+    };
+
+    let isRotationLocked = false;
+    // Reset North bearing
+    window.resetNorth = () => {
+      map.easeTo({
+        bearing: 0,
+        pitch: 60,
+        duration: 800
+      });
+    };
+
+    // Toggle rotation lock
+    window.toggleRotationLock = (locked) => {
+      isRotationLocked = locked;
+      if (isRotationLocked) {
+        map.dragRotate.disable();
+        map.touchZoomRotate.disableRotation();
+      } else {
+        map.dragRotate.enable();
+        map.touchZoomRotate.enableRotation();
+      }
     };
 
     // Dynamic reports update layer
@@ -513,6 +545,12 @@ export const getMapHtml = (reports: typeof MOCK_REPORTS) => {
           window.setMapTheme(msg.theme);
         } else if (msg.type === 'updateReports') {
           window.updateReports(msg.list);
+        } else if (msg.type === 'resetNorth') {
+          window.resetNorth();
+        } else if (msg.type === 'toggleRotationLock') {
+          window.toggleRotationLock(msg.locked);
+        } else if (msg.type === 'flyToLocation') {
+          window.flyToLocation(msg.lat, msg.lng, msg.zoom);
         }
       } catch (err) {}
     });

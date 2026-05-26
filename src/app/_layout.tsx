@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
-import { useColorScheme } from 'react-native';
+import { useColorScheme, Platform } from 'react-native';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import AppTabs from '@/components/app-tabs';
@@ -9,7 +9,26 @@ import { AppProvider } from '@/context/AppContext';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    if (Platform.OS === 'web') {
+      try {
+        return localStorage.getItem('civictwin_logged_in') === 'true';
+      } catch (e) {
+        return false;
+      }
+    }
+    return false;
+  });
+
+  const handleLoginSuccess = () => {
+    setIsLoggedIn(true);
+    if (Platform.OS === 'web') {
+      try {
+        localStorage.setItem('civictwin_logged_in', 'true');
+      } catch (e) {}
+    }
+  };
 
   return (
     <AppProvider>
@@ -18,7 +37,7 @@ export default function TabLayout() {
         {isLoggedIn ? (
           <AppTabs />
         ) : (
-          <LoginScreen onLoginSuccess={() => setIsLoggedIn(true)} />
+          <LoginScreen onLoginSuccess={handleLoginSuccess} />
         )}
       </ThemeProvider>
     </AppProvider>

@@ -5,11 +5,13 @@ import {
   Text,
   ScrollView,
   Platform,
+  TouchableOpacity,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Feather } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { useApp } from '@/context/AppContext';
 
 interface Contributor {
@@ -127,8 +129,15 @@ export default function LeaderboardScreen() {
       >
         {/* Header Title */}
         <View style={styles.header}>
-          <Text style={[styles.title, { color: palette.text }]}>Bhopal Civic Pride</Text>
-          <Text style={[styles.subtitle, { color: palette.textSecondary }]}>Leaderboard of Active Whistleblowers</Text>
+          <View style={styles.headerTitleRow}>
+            <TouchableOpacity onPress={() => router.push('/')} style={styles.backArrow}>
+              <Feather name="arrow-left" size={24} color={palette.text} />
+            </TouchableOpacity>
+            <Text style={[styles.title, { color: palette.text }]}>Bhopal Civic Pride</Text>
+          </View>
+          <Text style={[styles.subtitle, { color: palette.textSecondary, marginLeft: 36 }]}>
+            Leaderboard of Active Whistleblowers
+          </Text>
         </View>
 
         {/* User Card - Sleek card styling, no borders, soft drop shadow */}
@@ -211,6 +220,14 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: 24,
+  },
+  headerTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  backArrow: {
+    padding: 4,
   },
   title: {
     fontSize: 26,
