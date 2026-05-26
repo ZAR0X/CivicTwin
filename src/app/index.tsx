@@ -17,6 +17,7 @@ import {
 import { WebView } from 'react-native-webview';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Feather, Ionicons } from '@expo/vector-icons';
 import { getMapHtml, BHOPAL_COORDINATES } from '@/constants/mapHtml';
 import { useApp, Report } from '@/context/AppContext';
 
@@ -50,23 +51,21 @@ export default function HomeScreen() {
   const iframeRef = useRef<any>(null);
 
   const mapHtml = getMapHtml(reports);
-
-  // Colors based on palette: Onyx (000F08), Pumpkin Spice (FF6F00), Azure Mist (F4FFFE), Electric Aqua (92E5EC)
   const isDark = theme === 'dark';
 
-  const palette = {
+  // Palette: Onyx (000F08), Pumpkin Spice (FF6F00), Azure Mist (F4FFFE), Electric Aqua (92E5EC)
+  const colors = {
     bg: isDark ? '#000F08' : '#F4FFFE',
-    bgGradient: isDark ? ['#000F08', '#01120a', '#000000'] : ['#F4FFFE', '#e6fcf9', '#ffffff'],
+    cardBg: isDark ? '#000F08' : '#ffffff',
     text: isDark ? '#ffffff' : '#000F08',
-    textSecondary: isDark ? '#92E5EC' : '#475569',
-    cardBg: isDark ? 'rgba(0, 15, 8, 0.75)' : 'rgba(244, 255, 254, 0.85)',
-    cardBorder: isDark ? 'rgba(146, 229, 236, 0.15)' : 'rgba(0, 15, 8, 0.08)',
+    textSecondary: isDark ? '#92E5EC' : '#64748b',
+    border: isDark ? 'rgba(146, 229, 236, 0.1)' : 'rgba(0, 15, 8, 0.05)',
+    accent: '#FF6F00',
+    electricAqua: '#92E5EC',
+    shadow: 'rgba(0, 15, 8, 0.04)',
+    accentBg: isDark ? 'rgba(255, 111, 0, 0.1)' : 'rgba(255, 111, 0, 0.05)',
     inputBg: isDark ? 'rgba(146, 229, 236, 0.05)' : 'rgba(0, 15, 8, 0.03)',
     inputBorder: isDark ? 'rgba(146, 229, 236, 0.15)' : 'rgba(0, 15, 8, 0.08)',
-    accentOrange: '#FF6F00',
-    electricAqua: '#92E5EC',
-    onyx: '#000F08',
-    azureMist: '#F4FFFE',
   };
 
   // Sync reports list updates into WebView
@@ -139,7 +138,6 @@ export default function HomeScreen() {
     }
   };
 
-  // Reset variables for new report flow
   const resetReportFlow = () => {
     setTypedMessage('');
     setVoiceActive(false);
@@ -149,26 +147,22 @@ export default function HomeScreen() {
     setMockedAiResult(null);
   };
 
-  // Simulate camera click
   const handleCapturePhoto = () => {
     setCameraCaptured(true);
   };
 
-  // Simulate Speech-to-Text Voice Recording
   const handleVoiceInput = () => {
     setVoiceActive(true);
     setTimeout(() => {
       setVoiceActive(false);
-      setTypedMessage('Pothole is overflowing with rainwater, sewage smells bad.');
-    }, 2000);
+      setTypedMessage('Water pipe leakage flooding the main street corner.');
+    }, 1800);
   };
 
-  // Trigger Mock Gemini 1.5 Flash AI Processing
   const handleRunAiAnalysis = () => {
     if (!cameraCaptured) return;
     setAiLoading(true);
 
-    // Mock 2.5 seconds delay for Gemini AI analysis
     setTimeout(() => {
       setAiLoading(false);
       setAiAnalysisComplete(true);
@@ -203,10 +197,9 @@ export default function HomeScreen() {
           department: 'Municipal Corporation (PWD)',
         });
       }
-    }, 2500);
+    }, 2000);
   };
 
-  // Submit report to state and map
   const handleSubmitReport = () => {
     if (!mockedAiResult || !clickCoords) return;
 
@@ -220,31 +213,26 @@ export default function HomeScreen() {
     });
 
     setIsReportModalVisible(false);
-    
-    // Play Points animations
     setEarnedPointsAmount(25);
     setPointsOverlayVisible(true);
     setTimeout(() => setPointsOverlayVisible(false), 3000);
   };
 
-  // Upvote report (Community verification)
   const handleVerify = () => {
     if (!selectedReport) return;
     verifyReport(selectedReport.id);
     
-    // Award +50 points
     setEarnedPointsAmount(50);
     setPointsOverlayVisible(true);
     setTimeout(() => setPointsOverlayVisible(false), 3000);
-    
     setSelectedReport(null);
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: palette.bg }]}>
+    <View style={[styles.container, { backgroundColor: colors.bg }]}>
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
       
-      {/* Map Rendering Container */}
+      {/* Mapbox iframe/webview */}
       <View style={styles.mapContainer}>
         {Platform.OS === 'web' ? (
           <iframe
@@ -259,15 +247,12 @@ export default function HomeScreen() {
                 } catch (e) {}
               };
               window.addEventListener('message', listener);
-              
-              // Set initial map theme on load
               setTimeout(() => {
                 iframeRef.current?.contentWindow?.postMessage(
                   JSON.stringify({ type: 'setMapTheme', theme: theme }),
                   '*'
                 );
               }, 1000);
-
               return () => window.removeEventListener('message', listener);
             }}
           />
@@ -297,101 +282,113 @@ export default function HomeScreen() {
         )}
       </View>
 
-      {/* Top Floating Branding & Settings Bar */}
-      <SafeAreaView style={styles.topBar}>
-        <View style={styles.topBarRow}>
-          <BlurView intensity={isDark ? 25 : 55} tint={isDark ? 'dark' : 'light'} style={[styles.brandBadge, { borderColor: palette.cardBorder }]}>
-            <Text style={[styles.brandTitle, { color: palette.text }]}>CivicTwin</Text>
-            <View style={styles.statusPulse} />
-          </BlurView>
-
-          <View style={styles.rightBadges}>
-            {/* Theme Selector Toggle */}
-            <TouchableOpacity 
-              style={[styles.themeBtn, { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.7)', borderColor: palette.cardBorder }]}
-              onPress={toggleTheme}
-            >
-              <Text style={styles.themeBtnEmoji}>{isDark ? '☀️' : '🌙'}</Text>
+      {/* Sleek Floating Top Search Bar (Matches Screenshot Widget Layout) */}
+      <SafeAreaView style={styles.topOverlay}>
+        <View style={styles.topContainer}>
+          <View style={[styles.searchBar, { backgroundColor: colors.cardBg, borderColor: colors.border }]}>
+            <Feather name="search" size={20} color={isDark ? '#92E5EC' : '#94a3b8'} style={styles.searchIcon} />
+            <TextInput
+              style={[styles.searchInput, { color: colors.text }]}
+              placeholder="Search reports or tap map..."
+              placeholderTextColor={isDark ? '#64748b' : '#94a3b8'}
+              editable={false}
+            />
+            <TouchableOpacity style={styles.micBtn} onPress={toggleTheme}>
+              <Feather name={isDark ? "sun" : "moon"} size={18} color={colors.accent} />
             </TouchableOpacity>
+          </View>
 
-            {/* Scorecard */}
-            <BlurView intensity={isDark ? 25 : 55} tint={isDark ? 'dark' : 'light'} style={[styles.pointsBadge, { borderColor: palette.cardBorder }]}>
-              <Text style={styles.pointsEmoji}>🏆</Text>
-              <Text style={[styles.pointsText, { color: palette.text }]}>{userPoints} pts</Text>
-            </BlurView>
+          {/* Quick Stats Pill */}
+          <View style={styles.statsPillWrapper}>
+            <View style={[styles.statsPill, { backgroundColor: 'rgba(0, 15, 8, 0.8)' }]}>
+              <View style={styles.pulseIndicator} />
+              <Text style={styles.statsPillText}>Bhopal Live Command: {reports.length} Tickets</Text>
+              <Text style={styles.pointsPill}>🏆 {userPoints} pts</Text>
+            </View>
           </View>
         </View>
       </SafeAreaView>
 
-      {/* Floating Toggle Buttons (Satellite / 3D) */}
+      {/* Satellite Toggle Controls */}
       <View style={styles.mapControls}>
-        <TouchableOpacity style={styles.circleBtn} onPress={handleToggleMapMode} activeOpacity={0.8}>
-          <BlurView intensity={isDark ? 25 : 55} tint={isDark ? 'dark' : 'light'} style={[styles.circleBlur, { borderColor: palette.cardBorder }]}>
-            <Text style={styles.controlIcon}>{mapMode === '3d' ? '📡' : '🏙️'}</Text>
-          </BlurView>
+        <TouchableOpacity style={[styles.circleBtn, { backgroundColor: colors.cardBg, borderColor: colors.border }]} onPress={handleToggleMapMode} activeOpacity={0.85}>
+          <Feather name={mapMode === '3d' ? 'globe' : 'map'} size={20} color={colors.text} />
         </TouchableOpacity>
       </View>
 
-      {/* Floating Bottom Sheet Report Details view */}
+      {/* Sleek Bottom Sheet Details Card (Umami Bam styling) */}
       {selectedReport && (
         <View style={styles.detailOverlay}>
-          <BlurView intensity={isDark ? 30 : 60} tint={isDark ? 'dark' : 'light'} style={[styles.detailCard, { borderColor: palette.cardBorder }]}>
-            <View style={styles.cardIndicator} />
-            <ScrollView showsVerticalScrollIndicator={false}>
-              
-              <View style={styles.detailHeader}>
-                <View>
-                  <Text style={[styles.categoryBadge, { color: palette.accentOrange }]}>{selectedReport.category}</Text>
-                  <Text style={[styles.departmentName, { color: palette.textSecondary }]}>{selectedReport.department}</Text>
-                </View>
-                <View style={[
-                  styles.severityBadge,
-                  selectedReport.severity >= 8 ? styles.bgHigh : selectedReport.severity >= 5 ? styles.bgMedium : styles.bgLow
-                ]}>
-                  <Text style={styles.severityText}>Severity: {selectedReport.severity}/10</Text>
-                </View>
+          <View style={[styles.detailCard, { backgroundColor: colors.cardBg, borderColor: colors.border }]}>
+            <View style={styles.cardDragHandle} />
+            
+            <View style={styles.detailCardHeader}>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.detailTitle, { color: colors.text }]}>{selectedReport.category} Issue</Text>
+                <Text style={styles.detailAddress}>{selectedReport.department}</Text>
               </View>
+              <TouchableOpacity style={styles.bookmarkBtn}>
+                <Feather name="bookmark" size={20} color={colors.accent} />
+              </TouchableOpacity>
+            </View>
 
-              <Image source={{ uri: selectedReport.image }} style={styles.detailImage} />
-
-              <Text style={[styles.reportDesc, { color: palette.text }]}>{selectedReport.description}</Text>
-
-              <View style={[styles.metadataRow, { borderColor: palette.cardBorder }]}>
-                <Text style={[styles.metaLabel, { color: palette.textSecondary }]}>Status: <Text style={{ color: palette.text, fontWeight: 'bold' }}>{selectedReport.status}</Text></Text>
-                <Text style={[styles.metaLabel, { color: palette.textSecondary }]}>Date: <Text style={{ color: palette.text, fontWeight: 'bold' }}>{selectedReport.date}</Text></Text>
+            <View style={styles.badgeRow}>
+              <View style={styles.openBadge}>
+                <Text style={styles.openBadgeText}>Severity {selectedReport.severity}/10</Text>
               </View>
+              <Text style={[styles.dateText, { color: colors.textSecondary }]}>Reported {selectedReport.date}</Text>
+            </View>
 
-              <View style={styles.actionButtons}>
-                <TouchableOpacity
-                  style={[styles.verifyButton, selectedReport.verifiedByUser && styles.verifiedButtonDisabled]}
-                  onPress={handleVerify}
-                  disabled={selectedReport.verifiedByUser}
-                >
-                  <LinearGradient
-                    colors={selectedReport.verifiedByUser ? ['#475569', '#334155'] : [palette.accentOrange, '#d95f00']}
-                    style={styles.actionGradient}
-                  >
-                    <Text style={styles.actionBtnText}>
-                      {selectedReport.verifiedByUser ? '✓ Verified' : '👍 I See This Too (+50 pts)'}
-                    </Text>
-                  </LinearGradient>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={[styles.closeButton, { borderColor: palette.cardBorder }]} onPress={() => setSelectedReport(null)}>
-                  <Text style={[styles.closeBtnText, { color: palette.text }]}>Dismiss</Text>
-                </TouchableOpacity>
+            {/* Category info line */}
+            <View style={styles.categoryLine}>
+              <View style={[styles.categoryCircle, { backgroundColor: colors.accentBg }]}>
+                <Feather name="alert-triangle" size={14} color={colors.accent} />
               </View>
+              <Text style={[styles.categoryLineText, { color: colors.textSecondary }]}>
+                Status: <Text style={{ color: colors.accent, fontWeight: '600' }}>{selectedReport.status}</Text>
+              </Text>
+            </View>
 
+            {/* Main description text */}
+            <Text style={[styles.detailDesc, { color: colors.text }]}>{selectedReport.description}</Text>
+
+            {/* Horizontal Scroll list of images */}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.imagesScroll}>
+              <Image source={{ uri: selectedReport.image }} style={styles.scrollImage} />
+              <Image source={{ uri: 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=500' }} style={styles.scrollImage} />
+              <Image source={{ uri: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=500' }} style={styles.scrollImage} />
             </ScrollView>
-          </BlurView>
+
+            {/* Action buttons */}
+            <View style={styles.detailActions}>
+              <TouchableOpacity style={[styles.actionBtnOutline, { borderColor: colors.border }]} onPress={() => setSelectedReport(null)}>
+                <Text style={[styles.actionTextOutline, { color: colors.text }]}>Dismiss</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={[styles.actionBtnFilled, selectedReport.verifiedByUser && styles.actionBtnDisabled]}
+                onPress={handleVerify}
+                disabled={selectedReport.verifiedByUser}
+              >
+                <LinearGradient
+                  colors={selectedReport.verifiedByUser ? ['#64748b', '#475569'] : [colors.accent, '#e65c00']}
+                  style={styles.actionGradient}
+                >
+                  <Text style={styles.actionTextFilled}>
+                    {selectedReport.verifiedByUser ? 'Verified ✓' : 'Verify (+50 pts)'}
+                  </Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
       )}
 
-      {/* Main Glowing Floating Action Button (FAB) */}
+      {/* Floating Action Button (FAB) */}
       <View style={styles.fabContainer}>
         <TouchableOpacity
           style={styles.fabBtn}
-          activeOpacity={0.85}
+          activeOpacity={0.9}
           onPress={() => {
             setClickCoords({ latitude: 23.2324, longitude: 77.4262 });
             setIsReportModalVisible(true);
@@ -399,18 +396,16 @@ export default function HomeScreen() {
           }}
         >
           <LinearGradient
-            colors={[palette.accentOrange, '#e65c00']}
+            colors={[colors.accent, '#d95f00']}
             style={styles.fabGradient}
           >
-            <Text style={styles.fabText}>🚨 Report Issue</Text>
+            <Feather name="camera" size={20} color="#fff" style={styles.fabIcon} />
+            <Text style={styles.fabText}>Report Hazard</Text>
           </LinearGradient>
         </TouchableOpacity>
-        <Text style={[styles.fabHint, { color: palette.textSecondary }]}>
-          Tap anywhere on map to report, or tap button
-        </Text>
       </View>
 
-      {/* Report Creation Modal */}
+      {/* Clean Report Modal (emerges from bottom) */}
       <Modal
         visible={isReportModalVisible}
         animationType="slide"
@@ -418,28 +413,29 @@ export default function HomeScreen() {
         onRequestClose={() => setIsReportModalVisible(false)}
       >
         <View style={styles.modalBg}>
-          <BlurView intensity={25} tint="dark" style={StyleSheet.absoluteFillObject} />
+          <TouchableOpacity style={styles.modalDismissBg} onPress={() => setIsReportModalVisible(false)} />
           
-          <View style={[styles.modalContent, { backgroundColor: palette.bg, borderColor: palette.cardBorder }]}>
+          <View style={[styles.modalContent, { backgroundColor: colors.cardBg, borderColor: colors.border }]}>
+            <View style={styles.cardDragHandle} />
+            
             <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, { color: palette.text }]}>File Civic Grievance</Text>
-              <TouchableOpacity onPress={() => setIsReportModalVisible(false)}>
-                <Text style={[styles.modalCloseIcon, { color: palette.textSecondary }]}>✕</Text>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>New Civic Report</Text>
+              <TouchableOpacity style={styles.modalCloseBtn} onPress={() => setIsReportModalVisible(false)}>
+                <Feather name="x" size={20} color={colors.text} />
               </TouchableOpacity>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
               
-              {/* Step 1: Media Capture View */}
-              <Text style={[styles.formLabel, { color: palette.textSecondary }]}>Step 1: Capture Photo Evidence</Text>
+              {/* Media capture box */}
               {!cameraCaptured ? (
                 <TouchableOpacity 
-                  style={[styles.cameraBox, { backgroundColor: palette.inputBg, borderColor: palette.cardBorder }]} 
+                  style={[styles.cameraBox, { backgroundColor: colors.inputBg, borderColor: colors.border }]} 
                   onPress={handleCapturePhoto}
                 >
-                  <Text style={styles.cameraIcon}>📸</Text>
-                  <Text style={[styles.cameraLabel, { color: palette.text }]}>Tap to Capture Evidence</Text>
-                  <Text style={[styles.cameraSubtext, { color: palette.textSecondary }]}>Simulate device camera photo capture</Text>
+                  <Feather name="camera" size={32} color={colors.accent} style={{ marginBottom: 12 }} />
+                  <Text style={[styles.cameraLabel, { color: colors.text }]}>Snap Photo Evidence</Text>
+                  <Text style={{ fontSize: 12, color: colors.textSecondary, marginTop: 4 }}>Tap to open camera viewfinder</Text>
                 </TouchableOpacity>
               ) : (
                 <View style={styles.cameraPreviewContainer}>
@@ -448,20 +444,19 @@ export default function HomeScreen() {
                     style={styles.cameraPreview}
                   />
                   <TouchableOpacity style={styles.retakeBtn} onPress={() => setCameraCaptured(false)}>
-                    <Text style={styles.retakeText}>Retake Photo</Text>
+                    <Text style={styles.retakeText}>Retake</Text>
                   </TouchableOpacity>
                 </View>
               )}
 
-              {/* Step 2: Context / Descriptions */}
-              <Text style={[styles.formLabel, { color: palette.textSecondary }]}>Step 2: Add Details</Text>
+              {/* TextInput description */}
               <TextInput
                 style={[styles.messageInput, { 
-                  backgroundColor: palette.inputBg, 
-                  borderColor: palette.inputBorder,
-                  color: palette.text 
+                  backgroundColor: colors.inputBg, 
+                  borderColor: colors.border,
+                  color: colors.text 
                 }]}
-                placeholder="Describe the issue..."
+                placeholder="Describe issue (e.g. water leak, pothole)..."
                 placeholderTextColor={isDark ? '#64748b' : '#94a3b8'}
                 multiline={true}
                 value={typedMessage}
@@ -470,14 +465,16 @@ export default function HomeScreen() {
 
               <View style={styles.voiceRow}>
                 <TouchableOpacity
-                  style={[styles.voiceBtn, { backgroundColor: palette.inputBg, borderColor: palette.inputBorder }, voiceActive && styles.voiceBtnActive]}
+                  style={[styles.voiceBtn, { backgroundColor: colors.inputBg, borderColor: colors.border }, voiceActive && styles.voiceBtnActive]}
                   onPress={handleVoiceInput}
                 >
-                  <Text style={[styles.voiceIcon, { color: palette.text }]}>{voiceActive ? '🎙️ Recording...' : '🎤 Simulate Voice Input'}</Text>
+                  <Text style={[styles.voiceIcon, { color: colors.text }]}>
+                    {voiceActive ? '🎙️ Listening...' : '🎤 Simulate Voice'}
+                  </Text>
                 </TouchableOpacity>
               </View>
 
-              {/* Step 3: Run AI Processing */}
+              {/* Gemini AI Trigger Button */}
               {cameraCaptured && !aiAnalysisComplete && (
                 <TouchableOpacity
                   style={[styles.aiButton, aiLoading && styles.disabledBtn]}
@@ -485,56 +482,52 @@ export default function HomeScreen() {
                   disabled={aiLoading}
                 >
                   <LinearGradient
-                    colors={[palette.accentOrange, '#e65c00']}
+                    colors={['#6366f1', '#4f46e5']}
                     style={styles.aiButtonGradient}
                   >
                     {aiLoading ? (
                       <ActivityIndicator size="small" color="#fff" />
                     ) : (
-                      <Text style={styles.aiButtonText}>🪄 Analyze with Gemini AI</Text>
+                      <Text style={styles.aiButtonText}>🪄 Gemini AI Analysis</Text>
                     )}
                   </LinearGradient>
                 </TouchableOpacity>
               )}
 
-              {/* Step 4: AI Analysis Results Card */}
+              {/* AI Diagnostics details card */}
               {aiAnalysisComplete && mockedAiResult && (
-                <View style={[styles.aiResultCard, { 
-                  backgroundColor: isDark ? 'rgba(255, 111, 0, 0.05)' : 'rgba(255, 111, 0, 0.03)', 
-                  borderColor: 'rgba(255, 111, 0, 0.3)' 
-                }]}>
-                  <Text style={[styles.aiResultHeader, { color: palette.accentOrange }]}>✦ CivicTwin AI Diagnostics</Text>
+                <View style={[styles.aiResultCard, { backgroundColor: colors.inputBg, borderColor: colors.border }]}>
+                  <Text style={[styles.aiResultHeader, { color: colors.accent }]}>✦ Gemini AI Diagnostics</Text>
                   
                   <View style={styles.aiFieldRow}>
-                    <Text style={[styles.aiFieldLabel, { color: palette.textSecondary }]}>Category:</Text>
-                    <Text style={[styles.aiFieldValue, { color: palette.text }]}>{mockedAiResult.category}</Text>
+                    <Text style={[styles.aiFieldLabel, { color: colors.textSecondary }]}>Category:</Text>
+                    <Text style={[styles.aiFieldValue, { color: colors.text }]}>{mockedAiResult.category}</Text>
                   </View>
 
                   <View style={styles.aiFieldRow}>
-                    <Text style={[styles.aiFieldLabel, { color: palette.textSecondary }]}>Severity:</Text>
+                    <Text style={[styles.aiFieldLabel, { color: colors.textSecondary }]}>Severity:</Text>
                     <Text style={[styles.aiFieldValue, { color: '#ef4444', fontWeight: 'bold' }]}>
                       {mockedAiResult.severity}/10
                     </Text>
                   </View>
 
                   <View style={styles.aiFieldRow}>
-                    <Text style={[styles.aiFieldLabel, { color: palette.textSecondary }]}>Department:</Text>
-                    <Text style={[styles.aiFieldValue, { color: palette.text }]}>{mockedAiResult.department}</Text>
+                    <Text style={[styles.aiFieldLabel, { color: colors.textSecondary }]}>Department:</Text>
+                    <Text style={[styles.aiFieldValue, { color: colors.text }]}>{mockedAiResult.department}</Text>
                   </View>
 
-                  <Text style={[styles.aiResultDesc, { color: palette.text, borderColor: palette.cardBorder }]}>{mockedAiResult.description}</Text>
-                  
-                  <Text style={[styles.locationTag, { color: palette.textSecondary }]}>📍 GPS: {clickCoords?.latitude.toFixed(6)}, {clickCoords?.longitude.toFixed(6)}</Text>
+                  <Text style={[styles.aiResultDesc, { color: colors.text, borderTopColor: colors.border }]}>{mockedAiResult.description}</Text>
+                  <Text style={{ fontSize: 11, color: colors.textSecondary, marginBottom: 20 }}>📍 GPS: {clickCoords?.latitude.toFixed(6)}, {clickCoords?.longitude.toFixed(6)}</Text>
 
                   <TouchableOpacity
                     style={styles.submitButton}
                     onPress={handleSubmitReport}
                   >
                     <LinearGradient
-                      colors={[palette.accentOrange, '#e65c00']}
+                      colors={[colors.accent, '#d95f00']}
                       style={styles.submitGradient}
                     >
-                      <Text style={styles.submitBtnText}>Submit to Bhopal Command Center</Text>
+                      <Text style={styles.submitBtnText}>Submit Report (+25 PTS)</Text>
                     </LinearGradient>
                   </TouchableOpacity>
                 </View>
@@ -545,7 +538,7 @@ export default function HomeScreen() {
         </View>
       </Modal>
 
-      {/* Reputation Points Overlay */}
+      {/* Points overlay card */}
       {pointsOverlayVisible && (
         <View style={styles.pointsOverlay}>
           <BlurView intensity={50} tint="dark" style={styles.pointsOverlayBlur}>
@@ -568,183 +561,226 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   mapContainer: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     zIndex: 1,
   },
   webView: {
     flex: 1,
   },
-  topBar: {
+  topOverlay: {
     position: 'absolute',
     top: Platform.OS === 'ios' ? 0 : 10,
     left: 0,
     right: 0,
     zIndex: 10,
-    paddingHorizontal: 20,
-  },
-  topBarRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 10,
-  },
-  brandBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 8,
     paddingHorizontal: 16,
-    borderRadius: 20,
-    borderWidth: 1,
-    overflow: 'hidden',
   },
-  brandTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginRight: 8,
-  },
-  statusPulse: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#FF6F00',
-  },
-  rightBadges: {
-    flexDirection: 'row',
+  topContainer: {
+    width: '100%',
     alignItems: 'center',
     gap: 8,
   },
-  themeBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 24,
+    borderWidth: 1,
+    height: 54,
+    paddingHorizontal: 16,
+    width: '100%',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  searchIcon: {
+    marginRight: 12,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '500',
+    height: '100%',
+    outlineStyle: 'none',
+  } as any,
+  micBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  statsPillWrapper: {
+    alignItems: 'center',
+  },
+  statsPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    gap: 8,
+  },
+  pulseIndicator: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#FF6F00',
+  },
+  statsPillText: {
+    color: '#ffffff',
+    fontSize: 11.5,
+    fontWeight: 'bold',
+  },
+  pointsPill: {
+    color: '#92E5EC',
+    fontSize: 11.5,
+    fontWeight: 'bold',
+    borderLeftWidth: 1,
+    borderLeftColor: 'rgba(255, 255, 255, 0.2)',
+    paddingLeft: 8,
+  },
+  mapControls: {
+    position: 'absolute',
+    right: 16,
+    top: height * 0.18,
+    zIndex: 10,
+  },
+  circleBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  detailOverlay: {
+    position: 'absolute',
+    bottom: Platform.OS === 'ios' ? 90 : 100,
+    left: 0,
+    right: 0,
+    zIndex: 15,
+    paddingHorizontal: 16,
+  },
+  detailCard: {
+    borderRadius: 28,
+    padding: 24,
+    borderWidth: 1,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.05,
+    shadowRadius: 15,
+    elevation: 6,
+    maxHeight: height * 0.58,
+  },
+  cardDragHandle: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: 'rgba(0, 15, 8, 0.1)',
+    alignSelf: 'center',
+    marginBottom: 16,
+  },
+  detailCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  detailTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    letterSpacing: -0.5,
+  },
+  detailAddress: {
+    fontSize: 13,
+    color: '#64748b',
+    marginTop: 2,
+  },
+  bookmarkBtn: {
+    padding: 4,
+  },
+  badgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 16,
+  },
+  openBadge: {
+    backgroundColor: 'rgba(255, 111, 0, 0.08)',
+    borderRadius: 6,
+    paddingVertical: 3,
+    paddingHorizontal: 8,
+  },
+  openBadgeText: {
+    color: '#FF6F00',
+    fontSize: 11,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+  },
+  dateText: {
+    fontSize: 12,
+  },
+  categoryLine: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 14,
+  },
+  categoryCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  categoryLineText: {
+    fontSize: 13,
+  },
+  detailDesc: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 16,
+  },
+  imagesScroll: {
+    flexDirection: 'row',
+    marginBottom: 20,
+  },
+  scrollImage: {
+    width: 90,
+    height: 90,
+    borderRadius: 14,
+    marginRight: 10,
+  },
+  detailActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  actionBtnOutline: {
+    flex: 1,
+    height: 48,
+    borderRadius: 24,
     borderWidth: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  themeBtnEmoji: {
-    fontSize: 16,
-  },
-  pointsBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-    borderWidth: 1,
-    overflow: 'hidden',
-  },
-  pointsEmoji: {
-    fontSize: 16,
-    marginRight: 6,
-  },
-  pointsText: {
+  actionTextOutline: {
     fontWeight: 'bold',
     fontSize: 14,
   },
-  mapControls: {
-    position: 'absolute',
-    right: 20,
-    top: height * 0.15,
-    zIndex: 10,
-    gap: 12,
-  },
-  circleBtn: {
-    width: 48,
+  actionBtnFilled: {
+    flex: 1,
     height: 48,
     borderRadius: 24,
     overflow: 'hidden',
   },
-  circleBlur: {
-    flex: 1,
-    borderWidth: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  controlIcon: {
-    fontSize: 20,
-  },
-  detailOverlay: {
-    position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 100 : 120,
-    left: 20,
-    right: 20,
-    zIndex: 15,
-  },
-  detailCard: {
-    borderRadius: 24,
-    padding: 24,
-    borderWidth: 1,
-    overflow: 'hidden',
-    maxHeight: height * 0.6,
-  },
-  cardIndicator: {
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: 'rgba(0, 15, 8, 0.2)',
-    alignSelf: 'center',
-    marginBottom: 16,
-  },
-  detailHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 16,
-  },
-  categoryBadge: {
-    fontWeight: 'bold',
-    fontSize: 12,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  departmentName: {
-    fontSize: 13,
-    marginTop: 2,
-  },
-  severityBadge: {
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: 8,
-  },
-  bgHigh: { backgroundColor: 'rgba(239, 68, 68, 0.2)', borderWidth: 1, borderColor: '#ef4444' },
-  bgMedium: { backgroundColor: 'rgba(249, 115, 22, 0.2)', borderWidth: 1, borderColor: '#f97316' },
-  bgLow: { backgroundColor: 'rgba(234, 179, 8, 0.2)', borderWidth: 1, borderColor: '#eab308' },
-  severityText: {
-    color: '#ffffff',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  detailImage: {
-    width: '100%',
-    height: 160,
-    borderRadius: 14,
-    marginBottom: 16,
-  },
-  reportDesc: {
-    fontSize: 15,
-    lineHeight: 22,
-    marginBottom: 16,
-  },
-  metadataRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    paddingVertical: 12,
-    marginBottom: 20,
-  },
-  metaLabel: {
-    fontSize: 12,
-  },
-  actionButtons: {
-    gap: 12,
-  },
-  verifyButton: {
-    height: 50,
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  verifiedButtonDisabled: {
+  actionBtnDisabled: {
     opacity: 0.6,
   },
   actionGradient: {
@@ -752,112 +788,92 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  actionBtnText: {
+  actionTextFilled: {
     color: '#ffffff',
     fontWeight: 'bold',
-    fontSize: 15,
-  },
-  closeButton: {
-    height: 50,
-    borderRadius: 12,
-    borderWidth: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  closeBtnText: {
-    fontWeight: '600',
     fontSize: 14,
   },
   fabContainer: {
     position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 30 : 50,
+    bottom: Platform.OS === 'ios' ? 24 : 40,
     left: 0,
     right: 0,
     zIndex: 10,
     alignItems: 'center',
-    justifyContent: 'center',
   },
   fabBtn: {
-    height: 56,
-    borderRadius: 28,
+    height: 50,
+    borderRadius: 25,
     overflow: 'hidden',
-    boxShadow: '0 0 20px rgba(255, 111, 0, 0.4)',
+    shadowColor: '#FF6F00',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
     elevation: 8,
   },
   fabGradient: {
-    paddingHorizontal: 28,
-    justifyContent: 'center',
+    flexDirection: 'row',
     alignItems: 'center',
+    paddingHorizontal: 24,
     height: '100%',
+    gap: 8,
+  },
+  fabIcon: {
+    marginTop: -1,
   },
   fabText: {
     color: '#ffffff',
     fontWeight: 'bold',
-    fontSize: 16,
-    letterSpacing: 0.5,
-  },
-  fabHint: {
-    fontSize: 11,
-    marginTop: 8,
-    textAlign: 'center',
-    fontWeight: '500',
+    fontSize: 15,
   },
   modalBg: {
     flex: 1,
     justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0, 15, 8, 0.4)',
+  },
+  modalDismissBg: {
+    ...StyleSheet.absoluteFill,
   },
   modalContent: {
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     padding: 24,
-    height: height * 0.85,
+    height: height * 0.82,
     borderWidth: 1,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: -10 },
+    shadowOpacity: 0.05,
+    shadowRadius: 15,
+    elevation: 10,
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 20,
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: 19,
     fontWeight: 'bold',
   },
-  modalCloseIcon: {
-    fontSize: 18,
+  modalCloseBtn: {
     padding: 4,
   },
-  formLabel: {
-    fontSize: 13,
-    fontWeight: 'bold',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 12,
-    marginTop: 8,
-  },
   cameraBox: {
-    height: 180,
+    height: 160,
     borderRadius: 16,
-    borderWidth: 2,
+    borderWidth: 1.5,
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
   },
-  cameraIcon: {
-    fontSize: 32,
-    marginBottom: 10,
-  },
   cameraLabel: {
     fontSize: 15,
     fontWeight: 'bold',
   },
-  cameraSubtext: {
-    fontSize: 11,
-    marginTop: 4,
-  },
   cameraPreviewContainer: {
-    height: 180,
+    height: 160,
     borderRadius: 16,
     overflow: 'hidden',
     position: 'relative',
@@ -871,12 +887,10 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 12,
     right: 12,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
     borderRadius: 8,
-    backgroundColor: 'rgba(0, 15, 8, 0.8)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(0, 15, 8, 0.75)',
   },
   retakeText: {
     color: '#ffffff',
@@ -886,38 +900,36 @@ const styles = StyleSheet.create({
   messageInput: {
     borderRadius: 12,
     borderWidth: 1,
-    padding: 16,
-    height: 100,
-    fontSize: 15,
+    padding: 14,
+    height: 90,
+    fontSize: 14.5,
     textAlignVertical: 'top',
     marginBottom: 12,
     outlineStyle: 'none',
   } as any,
   voiceRow: {
     flexDirection: 'row',
-    justifyContent: 'flex-start',
-    marginBottom: 24,
+    marginBottom: 20,
   },
   voiceBtn: {
     borderWidth: 1,
-    borderRadius: 20,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+    borderRadius: 18,
+    paddingVertical: 7,
+    paddingHorizontal: 14,
   },
   voiceBtnActive: {
     borderColor: '#ef4444',
     backgroundColor: 'rgba(239, 68, 68, 0.1)',
   },
   voiceIcon: {
-    fontSize: 13,
+    fontSize: 12.5,
     fontWeight: '600',
   },
   aiButton: {
-    height: 52,
-    borderRadius: 12,
+    height: 48,
+    borderRadius: 24,
     overflow: 'hidden',
-    marginBottom: 24,
-    boxShadow: '0 0 15px rgba(255, 111, 0, 0.3)',
+    marginBottom: 20,
   },
   aiButtonGradient: {
     flex: 1,
@@ -927,7 +939,7 @@ const styles = StyleSheet.create({
   aiButtonText: {
     color: '#ffffff',
     fontWeight: 'bold',
-    fontSize: 15,
+    fontSize: 14,
   },
   disabledBtn: {
     opacity: 0.7,
@@ -935,48 +947,42 @@ const styles = StyleSheet.create({
   aiResultCard: {
     borderWidth: 1,
     borderRadius: 16,
-    padding: 20,
+    padding: 18,
     marginTop: 10,
-    boxShadow: '0 0 15px rgba(255, 111, 0, 0.15)',
   },
   aiResultHeader: {
-    fontSize: 15,
+    fontSize: 14.5,
     fontWeight: 'bold',
-    marginBottom: 16,
+    marginBottom: 14,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   aiFieldRow: {
     flexDirection: 'row',
-    marginBottom: 10,
+    marginBottom: 8,
   },
   aiFieldLabel: {
-    width: 100,
-    fontSize: 13,
+    width: 90,
+    fontSize: 12.5,
     fontWeight: '600',
   },
   aiFieldValue: {
     flex: 1,
-    fontSize: 13,
+    fontSize: 12.5,
     fontWeight: '600',
   },
   aiResultDesc: {
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 13.5,
+    lineHeight: 18,
     marginTop: 8,
     borderTopWidth: 1,
     paddingTop: 10,
     marginBottom: 12,
   },
-  locationTag: {
-    fontSize: 11,
-    marginBottom: 20,
-  },
   submitButton: {
-    height: 50,
-    borderRadius: 12,
+    height: 48,
+    borderRadius: 24,
     overflow: 'hidden',
-    boxShadow: '0 0 15px rgba(255, 111, 0, 0.4)',
   },
   submitGradient: {
     flex: 1,
@@ -994,14 +1000,14 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    zIndex: 99,
+    zIndex: 999,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 15, 8, 0.4)',
   },
   pointsOverlayBlur: {
-    width: 240,
-    padding: 30,
+    width: 200,
+    padding: 24,
     borderRadius: 24,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.15)',
@@ -1009,23 +1015,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   overlayTrophy: {
-    fontSize: 48,
-    marginBottom: 12,
+    fontSize: 40,
+    marginBottom: 10,
   },
   overlayTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#ffffff',
     marginBottom: 4,
   },
   overlayAmount: {
-    fontSize: 36,
+    fontSize: 32,
     fontWeight: '900',
     color: '#FF6F00',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   overlayDesc: {
-    fontSize: 11,
+    fontSize: 10.5,
     color: '#94a3b8',
     textAlign: 'center',
   },
