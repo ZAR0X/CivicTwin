@@ -9,6 +9,7 @@ import {
   Platform,
   Animated,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView, BlurTargetView } from 'expo-blur';
@@ -53,12 +54,21 @@ interface LoginScreenProps {
 export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   const { theme, toggleTheme } = useApp();
   const backgroundRef = useRef<View>(null);
+  const otpInputRef = useRef<TextInput>(null);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [otpCode, setOtpCode] = useState('');
+  const [isOtpInputFocused, setIsOtpInputFocused] = useState(false);
   const [isOtpSent, setIsOtpSent] = useState(false);
   const [timer, setTimer] = useState(59);
   const [loading, setLoading] = useState(false);
   const [showLocationPrompt, setShowLocationPrompt] = useState(false);
+
+  // Segmented OTP configuration
+  const otpLength = 6;
+  const otpArray = Array(otpLength).fill('');
+  const handleOtpPress = () => {
+    otpInputRef.current?.focus();
+  };
 
   // Animation values
   const cardSlideAnim = useRef(new Animated.Value(400)).current; // Emerge from bottom
@@ -66,20 +76,20 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   const logoFadeAnim = useRef(new Animated.Value(0)).current;
   const logoScaleAnim = useRef(new Animated.Value(0.9)).current;
 
-  // Colors based on palette: Onyx (000F08), Pumpkin Spice (FF6F00), Azure Mist (F4FFFE), Electric Aqua (92E5EC)
-  const isDark = theme === 'dark';
-  
+  const isDark = false;
+
+  // Statically white-themed login screen colors (Onyx #000F08, Pumpkin Spice #FF6F00, Azure Mist #ffffff)
   const colors = {
-    bg: isDark ? ['#000F08', '#011c10', '#000000'] : ['#F4FFFE', '#e0fcf9', '#ffffff'],
-    text: isDark ? '#ffffff' : '#000F08',
-    textSecondary: isDark ? '#92E5EC' : '#475569',
-    cardBg: isDark ? 'rgba(0, 15, 8, 0.75)' : 'rgba(244, 255, 254, 0.85)',
-    inputBg: isDark ? 'rgba(146, 229, 236, 0.05)' : 'rgba(0, 15, 8, 0.03)',
-    inputBorder: isDark ? 'rgba(146, 229, 236, 0.15)' : 'rgba(0, 15, 8, 0.08)',
+    bg: ['#ffffff', '#ffffff'],
+    text: '#000F08',
+    textSecondary: '#475569',
+    cardBg: 'rgba(255, 255, 255, 0.85)',
+    inputBg: 'rgba(0, 15, 8, 0.03)',
+    inputBorder: 'rgba(0, 15, 8, 0.08)',
     accentOrange: '#FF6F00',
     electricAqua: '#92E5EC',
     onyx: '#000F08',
-    azureMist: '#F4FFFE',
+    azureMist: '#ffffff',
   };
 
   useEffect(() => {
@@ -146,47 +156,18 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: isDark ? '#000F08' : '#F4FFFE' }]}>
-      {/* Dynamic Background Gradients */}
+    <View style={[styles.container, { backgroundColor: '#ffffff' }]}>
+      {/* Background Image covering the screen (inside BlurTargetView so it blurs correctly) */}
       <BlurTargetView ref={backgroundRef} style={StyleSheet.absoluteFill}>
-        <LinearGradient
-          colors={colors.bg as any}
+        <Image
+          source={require('@/assets/images/login_background.png')}
           style={StyleSheet.absoluteFill}
-        />
-
-        {/* Decorative Blur Orbs */}
-        <View 
-          pointerEvents="none"
-          style={[styles.glowBlob, { 
-            top: '10%', 
-            right: '-10%', 
-            backgroundColor: colors.accentOrange, 
-            opacity: isDark ? 0.15 : 0.1 
-          }]} 
-        />
-        <View 
-          pointerEvents="none"
-          style={[styles.glowBlob, { 
-            bottom: '30%', 
-            left: '-10%', 
-            backgroundColor: colors.electricAqua, 
-            opacity: isDark ? 0.2 : 0.15 
-          }]} 
+          resizeMode="cover"
         />
       </BlurTargetView>
 
-      {/* Theme Switcher Button */}
-      <TouchableOpacity 
-        style={[styles.themeToggle, { borderColor: colors.inputBorder }]} 
-        onPress={toggleTheme}
-      >
-        <Text style={styles.themeToggleText}>
-          {isDark ? '☀️ Light Mode' : '🌙 Dark Mode'}
-        </Text>
-      </TouchableOpacity>
-
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior="padding"
         style={styles.keyboardView}
         enabled={Platform.OS !== 'web'}
       >
@@ -221,8 +202,16 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
           <GlassContainer
             intensity={isDark ? 20 : 40}
             tint={isDark ? 'dark' : 'light'}
-            style={[styles.blurCard, { backgroundColor: colors.cardBg }]}
+            style={
+              [
+                styles.blurCard, 
+                { 
+                  backgroundColor: colors.cardBg,
+                }
+              ]
+            }
             blurTarget={backgroundRef}
+            
           >
             
             {!isOtpSent ? (
@@ -230,11 +219,11 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
               <View style={styles.formContainer}>
                 <Text style={[styles.label, { color: colors.text }]}>Mobile Number</Text>
                 
-                <View style={[styles.inputWrapper, { backgroundColor: colors.inputBg, borderColor: colors.inputBorder }]}>
+                <View style={[styles.inputWrapper, {borderColor: colors.inputBorder }]}>
                   <Text style={[styles.prefix, { color: colors.text }]}>+91</Text>
                   <TextInput
                     style={[styles.input, { color: colors.text }]}
-                    placeholder="98765 43210"
+                    placeholder="Enter your 10 digit phone number"
                     placeholderTextColor={isDark ? '#64748b' : '#94a3b8'}
                     keyboardType="phone-pad"
                     maxLength={10}
@@ -273,20 +262,50 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
               <View style={styles.formContainer}>
                 <Text style={[styles.label, { color: colors.text }]}>Enter 6-Digit OTP</Text>
                 
+                {/* Hidden input to receive focus & text */}
                 <TextInput
-                  style={[styles.otpInput, { 
-                    backgroundColor: colors.inputBg, 
-                    borderColor: colors.inputBorder,
-                    color: colors.text
-                  }]}
-                  placeholder="000000"
-                  placeholderTextColor={isDark ? '#64748b' : '#94a3b8'}
-                  keyboardType="number-pad"
-                  maxLength={6}
+                  ref={otpInputRef}
+                  style={styles.hiddenInput}
                   value={otpCode}
                   onChangeText={setOtpCode}
+                  keyboardType="number-pad"
+                  maxLength={otpLength}
+                  caretHidden={true}
+                  onFocus={() => setIsOtpInputFocused(true)}
+                  onBlur={() => setIsOtpInputFocused(false)}
                   editable={!loading}
                 />
+
+                {/* Visible segmented OTP slots */}
+                <TouchableOpacity 
+                  activeOpacity={1} 
+                  onPress={handleOtpPress} 
+                  style={styles.otpContainer}
+                >
+                  {otpArray.map((_, index) => {
+                    const char = otpCode[index] || '';
+                    const isCurrentActive = index === otpCode.length && isOtpInputFocused;
+                    
+                    return (
+                      <View 
+                        key={index} 
+                        style={[
+                          styles.otpBox, 
+                          { 
+                            
+                            borderColor: isCurrentActive ? colors.accentOrange : colors.inputBorder 
+                          }
+                        ]}
+                      >
+                        {isCurrentActive ? (
+                          <Text style={[styles.otpCursor, { color: colors.accentOrange }]}>_</Text>
+                        ) : (
+                          <Text style={[styles.otpChar, { color: colors.text }]}>{char}</Text>
+                        )}
+                      </View>
+                    );
+                  })}
+                </TouchableOpacity>
 
                 <View style={styles.timerRow}>
                   {timer > 0 ? (
@@ -448,11 +467,10 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   cardContainer: {
-    width: '100%',
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
+    width: '90%',
+    borderRadius: 32,
     overflow: 'hidden',
-    shadowColor: '#000000',
+    shadowColor: '#000000ff',
     shadowOffset: { width: 0, height: -10 },
     shadowOpacity: 0.1,
     shadowRadius: 20,
@@ -494,16 +512,40 @@ const styles = StyleSheet.create({
     borderWidth: 0,
     outlineStyle: 'none', // fixes blue outlines in browsers
   } as any,
-  otpInput: {
-    borderRadius: 16,
-    borderWidth: 1,
-    height: 56,
-    fontSize: 22,
-    textAlign: 'center',
-    letterSpacing: 6,
+  hiddenInput: {
+    position: 'absolute',
+    width: 0,
+    height: 0,
+    opacity: 0,
+  },
+  otpContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginVertical: 10,
+    paddingHorizontal: 4,
+  },
+  otpBox: {
+    width: 44,
+    height: 54,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.02,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  otpChar: {
+    fontSize: 20,
     fontWeight: 'bold',
-    outlineStyle: 'none',
-  } as any,
+  },
+  otpCursor: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
   infoText: {
     fontSize: 11.5,
     color: '#64748b',
