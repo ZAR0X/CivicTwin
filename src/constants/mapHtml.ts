@@ -305,7 +305,8 @@ export const getMapHtml = (reports: any[], theme: 'light' | 'dark' = 'light') =>
       display: flex;
       justify-content: center;
       align-items: center;
-      position: relative;
+      position: absolute !important;
+      will-change: transform;
     }
 
     /* Custom Marker Visual Element (inside container, handles hover scaling transition) */
