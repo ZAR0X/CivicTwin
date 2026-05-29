@@ -15,13 +15,45 @@ import {
   ScrollView,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
-import { BlurView } from 'expo-blur';
+import { BlurView, BlurTargetView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { getMapHtml, BHOPAL_COORDINATES } from '@/constants/mapHtml';
 import { useApp, Report } from '@/context/AppContext';
 import { router } from 'expo-router';
 import { apiService } from '@/services/apiService';
+
+interface GlassContainerProps {
+  children: React.ReactNode;
+  style: any;
+  intensity: number;
+  tint: 'light' | 'dark';
+  blurTarget?: React.RefObject<any>;
+}
+
+function GlassContainer({ children, style, intensity, tint, blurTarget }: GlassContainerProps) {
+  if (Platform.OS === 'web') {
+    return (
+      <View 
+        {...({ className: "acrylic-glass-card" } as any)} 
+        style={style}
+      >
+        {children}
+      </View>
+    );
+  }
+  return (
+    <BlurView 
+      intensity={intensity} 
+      tint={tint} 
+      style={style}
+      blurMethod="dimezisBlurView"
+      blurTarget={blurTarget}
+    >
+      {children}
+    </BlurView>
+  );
+}
 
 export default function HomeScreen() {
   const { theme, toggleTheme, reports, userPoints, addReport, verifyReport } = useApp();
@@ -53,8 +85,11 @@ export default function HomeScreen() {
 
   const webViewRef = useRef<WebView>(null);
   const iframeRef = useRef<any>(null);
+  const mapTargetRef = useRef<View>(null);
 
-  const mapHtml = getMapHtml(reports, theme);
+  const initialMapHtml = React.useMemo(() => {
+    return getMapHtml(reports, theme);
+  }, []);
   const isDark = theme === 'dark';
 
   // Palette: Onyx (000F08), Pumpkin Spice (FF6F00), Azure Mist (F4FFFE), Electric Aqua (92E5EC)
@@ -285,17 +320,21 @@ export default function HomeScreen() {
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
       
       {/* Mapbox iframe/webview */}
-      <View style={styles.mapContainer}>
+      <BlurTargetView ref={mapTargetRef} style={styles.mapContainer}>
         {Platform.OS === 'web' ? (
           <iframe
             ref={iframeRef}
-            srcDoc={mapHtml}
+            srcDoc={initialMapHtml}
             style={{ border: 'none', width: '100%', height: '100%' }}
             onLoad={() => {
               // Sync current theme style directly when iframe finishes loading
               setTimeout(() => {
                 iframeRef.current?.contentWindow?.postMessage(
                   JSON.stringify({ type: 'setMapTheme', theme: theme }),
+                  '*'
+                );
+                iframeRef.current?.contentWindow?.postMessage(
+                  JSON.stringify({ type: 'updateReports', list: reports }),
                   '*'
                 );
               }, 100);
@@ -305,7 +344,7 @@ export default function HomeScreen() {
           <WebView
             ref={webViewRef}
             originWhitelist={['*']}
-            source={{ html: mapHtml }}
+            source={{ html: initialMapHtml }}
             javaScriptEnabled={true}
             domStorageEnabled={true}
             onMessage={(event) => {
@@ -319,44 +358,24 @@ export default function HomeScreen() {
                 if (window.setMapTheme) {
                   window.setMapTheme("${theme}");
                 }
+                if (window.updateReports) {
+                  window.updateReports(${JSON.stringify(reports)});
+                }
                 void(0);
               `);
             }}
             style={styles.webView}
           />
         )}
-      </View>
+      </BlurTargetView>
 
-      {/* Sleek Floating Top Search Bar (Matches Screenshot Widget Layout) */}
+      {/* Sleek Floating Top Stats Pill */}
       <SafeAreaView style={styles.topOverlay}>
         <View style={styles.topContainer}>
-          <BlurView
-            intensity={Platform.OS === 'web' ? 0 : 65}
-            tint={isDark ? "dark" : "light"}
-            style={[
-              styles.searchBar, 
-              { 
-                backgroundColor: isDark ? 'rgba(0, 15, 8, 0.72)' : 'rgba(255, 255, 255, 0.75)', 
-                borderColor: colors.border 
-              }
-            ]}
-          >
-            <Feather name="search" size={20} color={isDark ? '#92E5EC' : '#64748b'} style={styles.searchIcon} />
-            <TextInput
-              style={[styles.searchInput, { color: colors.text }]}
-              placeholder="Search reports or tap map..."
-              placeholderTextColor={isDark ? '#64748b' : '#94a3b8'}
-              editable={false}
-            />
-            <TouchableOpacity style={styles.micBtn} onPress={() => router.push('/settings')}>
-              <Feather name="settings" size={18} color={colors.accent} />
-            </TouchableOpacity>
-          </BlurView>
-
           {/* Quick Stats Pill */}
           <View style={styles.statsPillWrapper}>
-            <BlurView
-              intensity={Platform.OS === 'web' ? 0 : 50}
+            <GlassContainer
+              intensity={50}
               tint="dark"
               style={[
                 styles.statsPill, 
@@ -366,16 +385,17 @@ export default function HomeScreen() {
                   borderWidth: 1
                 }
               ]}
+              blurTarget={mapTargetRef}
             >
               <View style={styles.pulseIndicator} />
               <Text style={styles.statsPillText}>Bhopal Live Command: {reports.length} Tickets</Text>
               <Text style={styles.pointsPill}>🏆 {userPoints} pts</Text>
-            </BlurView>
+            </GlassContainer>
           </View>
         </View>
       </SafeAreaView>
 
-      {/* Satellite, Compass, Location & Leaderboard Toggle Controls */}
+      {/* Satellite, Compass & Location Controls */}
       <View style={styles.mapControls}>
         {/* Satellite Mode Button */}
         <TouchableOpacity 
@@ -411,22 +431,13 @@ export default function HomeScreen() {
         >
           <Feather name="navigation" size={17} color={colors.text} style={{ transform: [{ rotate: '45deg' }] }} />
         </TouchableOpacity>
-
-        {/* Floating Leaderboard Screen Switcher */}
-        <TouchableOpacity 
-          style={[styles.circleBtn, { backgroundColor: colors.cardBg, borderColor: colors.border }]} 
-          onPress={() => router.push('/explore')} 
-          activeOpacity={0.85}
-        >
-          <Feather name="award" size={18} color={colors.text} />
-        </TouchableOpacity>
       </View>
 
       {/* Sleek Bottom Sheet Details Card (Umami Bam styling) */}
       {selectedReport && (
         <View style={styles.detailOverlay}>
-          <BlurView
-            intensity={Platform.OS === 'web' ? 0 : 70}
+          <GlassContainer
+            intensity={70}
             tint={isDark ? "dark" : "light"}
             style={[
               styles.detailCard, 
@@ -435,6 +446,7 @@ export default function HomeScreen() {
                 borderColor: colors.border 
               }
             ]}
+            blurTarget={mapTargetRef}
           >
             <View style={styles.cardDragHandle} />
             
@@ -523,7 +535,7 @@ export default function HomeScreen() {
                 </Text>
               </TouchableOpacity>
             </View>
-          </BlurView>
+          </GlassContainer>
         </View>
       )}
 
@@ -558,8 +570,8 @@ export default function HomeScreen() {
         <View style={styles.modalBg}>
           <TouchableOpacity style={styles.modalDismissBg} onPress={() => setIsReportModalVisible(false)} />
           
-          <BlurView
-            intensity={Platform.OS === 'web' ? 0 : 75}
+          <GlassContainer
+            intensity={75}
             tint={isDark ? "dark" : "light"}
             style={[
               styles.modalContent, 
@@ -568,6 +580,7 @@ export default function HomeScreen() {
                 borderColor: colors.border 
               }
             ]}
+            blurTarget={mapTargetRef}
           >
             <View style={styles.cardDragHandle} />
             
@@ -687,19 +700,24 @@ export default function HomeScreen() {
               )}
 
             </ScrollView>
-          </BlurView>
+          </GlassContainer>
         </View>
       </Modal>
 
       {/* Points overlay card */}
       {pointsOverlayVisible && (
         <View style={styles.pointsOverlay}>
-          <BlurView intensity={50} tint="dark" style={styles.pointsOverlayBlur}>
+          <GlassContainer
+            intensity={50}
+            tint="dark"
+            style={[styles.pointsOverlayBlur, { backgroundColor: 'rgba(0, 15, 8, 0.65)' }]}
+            blurTarget={mapTargetRef}
+          >
             <Text style={styles.overlayTrophy}>🏆</Text>
             <Text style={styles.overlayTitle}>Points Earned!</Text>
             <Text style={styles.overlayAmount}>+{earnedPointsAmount}</Text>
             <Text style={styles.overlayDesc}>Bhopal City Reputation Increased</Text>
-          </BlurView>
+          </GlassContainer>
         </View>
       )}
 
@@ -977,7 +995,7 @@ const styles = StyleSheet.create({
   },
   fabContainer: {
     position: 'absolute',
-    bottom: 36, // Sits cleanly at bottom center
+    bottom: 100, // Sits cleanly above the capsule tab bar
     left: 0,
     right: 0,
     zIndex: 10,

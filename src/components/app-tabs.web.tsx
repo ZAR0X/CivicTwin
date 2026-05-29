@@ -98,7 +98,7 @@ export function CustomTabList(props: TabListProps) {
 
 const styles = StyleSheet.create({
   tabListContainer: {
-    display: 'none', // Hides tab bar triggers visually to avoid bottom overlaps
+    display: 'flex', // Shows the tab bar triggers floating over the map
     position: 'absolute',
     bottom: 24, // Floating at the bottom
     left: 0,
