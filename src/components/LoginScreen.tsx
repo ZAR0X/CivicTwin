@@ -24,7 +24,10 @@ interface GlassContainerProps {
 function GlassContainer({ children, style, intensity, tint }: GlassContainerProps) {
   if (Platform.OS === 'web') {
     return (
-      <View style={[style, { backdropFilter: `blur(${intensity / 2}px) saturate(180%)`, WebkitBackdropFilter: `blur(${intensity / 2}px) saturate(180%)` }]}>
+      <View 
+        {...({ className: "acrylic-glass-card" } as any)} 
+        style={style}
+      >
         {children}
       </View>
     );

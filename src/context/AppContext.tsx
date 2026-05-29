@@ -29,6 +29,9 @@ interface AppContextType {
   setUserName: (name: string) => void;
   profilePhoto: string;
   setProfilePhoto: (photo: string) => void;
+  isLoggedIn: boolean;
+  login: () => void;
+  logout: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -47,6 +50,34 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return 120;
   });
   const [theme, setTheme] = useState<'light' | 'dark'>('dark'); // Default to dark theme
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    if (Platform.OS === 'web') {
+      try {
+        return localStorage.getItem('civictwin_logged_in') === 'true';
+      } catch (e) {
+        return false;
+      }
+    }
+    return false;
+  });
+
+  const login = () => {
+    setIsLoggedIn(true);
+    if (Platform.OS === 'web') {
+      try {
+        localStorage.setItem('civictwin_logged_in', 'true');
+      } catch (e) {}
+    }
+  };
+
+  const logout = () => {
+    setIsLoggedIn(false);
+    if (Platform.OS === 'web') {
+      try {
+        localStorage.removeItem('civictwin_logged_in');
+      } catch (e) {}
+    }
+  };
 
   const [userName, setUserNameState] = useState(() => {
     if (Platform.OS === 'web') {
@@ -198,7 +229,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       userName,
       setUserName,
       profilePhoto,
-      setProfilePhoto
+      setProfilePhoto,
+      isLoggedIn,
+      login,
+      logout
     }}>
       {children}
     </AppContext.Provider>
