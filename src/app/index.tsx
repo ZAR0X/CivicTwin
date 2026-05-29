@@ -98,7 +98,7 @@ export default function HomeScreen() {
     bg: isDark ? '#000F08' : '#F4FFFE',
     cardBg: isDark ? 'rgba(18, 18, 20, 0.48)' : 'rgba(255, 255, 255, 0.55)',
     text: isDark ? '#ffffff' : '#000F08',
-    textSecondary: isDark ? '#A9D8DC' : '#64748b',
+    textSecondary: isDark ? '#cbd5e1' : '#334155', // Higher contrast Slate colors for readability on blur cards
     border: isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 15, 8, 0.08)',
     accent: '#D88C51', // Muted pastel orange
     electricAqua: '#A9D8DC', // Muted pastel aqua
@@ -380,8 +380,8 @@ export default function HomeScreen() {
         )}
       </BlurTargetView>
 
-      {/* Sleek Floating Top Stats Pill - Left Aligned */}
-      <View style={styles.leftOverlay}>
+      {/* Sleek Floating Bottom Stats Pill */}
+      <View style={styles.statsOverlay}>
         <GlassContainer
           intensity={50}
           tint="dark"
@@ -439,16 +439,16 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Sleek Bottom Sheet Details Card (Umami Bam styling) */}
+      {/* Sleek Centered Details Card */}
       {selectedReport && (
         <View style={styles.detailOverlay}>
           <GlassContainer
-            intensity={70}
+            intensity={75}
             tint={isDark ? "dark" : "light"}
             style={[
               styles.detailCard, 
               { 
-                backgroundColor: isDark ? 'rgba(0, 15, 8, 0.72)' : 'rgba(255, 255, 255, 0.75)', 
+                backgroundColor: isDark ? 'rgba(0, 15, 8, 0.75)' : 'rgba(255, 255, 255, 0.78)', 
                 borderColor: colors.border 
               }
             ]}
@@ -456,79 +456,82 @@ export default function HomeScreen() {
           >
             <View style={styles.cardDragHandle} />
             
-            <View style={styles.detailCardHeader}>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.detailTitle, { color: colors.text }]}>{selectedReport.category} Hazard</Text>
-                <Text style={[styles.detailAddress, { color: colors.textSecondary }]}>{selectedReport.department}</Text>
-                <Text style={[styles.detailLocationText, { color: colors.textSecondary }]}>
-                  📍 GPS: {selectedReport.coordinates[1].toFixed(6)}, {selectedReport.coordinates[0].toFixed(6)}
-                </Text>
+            <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 16 }}>
+              <View style={styles.detailCardHeader}>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.detailTitle, { color: colors.text }]}>{selectedReport.category} Hazard</Text>
+                  <Text style={[styles.detailAddress, { color: colors.textSecondary }]}>📍 {selectedReport.address || 'Bhopal City'}</Text>
+                  <Text style={[styles.detailDeptText, { color: colors.textSecondary }]}>🏢 {selectedReport.department}</Text>
+                  <Text style={[styles.detailLocationText, { color: colors.textSecondary }]}>
+                    🌍 GPS: {selectedReport.coordinates[1].toFixed(6)}, {selectedReport.coordinates[0].toFixed(6)}
+                  </Text>
+                </View>
+                <TouchableOpacity style={styles.bookmarkBtn}>
+                  <Feather name="bookmark" size={20} color={colors.accent} />
+                </TouchableOpacity>
               </View>
-              <TouchableOpacity style={styles.bookmarkBtn}>
-                <Feather name="bookmark" size={20} color={colors.accent} />
-              </TouchableOpacity>
-            </View>
 
-            <View style={styles.badgeRow}>
-              <View style={[
-                styles.openBadge, 
-                { 
-                  backgroundColor: selectedReport.status === 'Resolved' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(216, 140, 81, 0.1)' 
-                }
-              ]}>
-                <Text style={[
-                  styles.openBadgeText, 
+              <View style={styles.badgeRow}>
+                <View style={[
+                  styles.openBadge, 
                   { 
-                    color: selectedReport.status === 'Resolved' ? '#10b981' : '#D88C51' 
+                    backgroundColor: selectedReport.status === 'Resolved' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(216, 140, 81, 0.1)' 
                   }
                 ]}>
-                  {selectedReport.status === 'Resolved' ? 'Resolved ✓' : 'Active report'}
-                </Text>
+                  <Text style={[
+                    styles.openBadgeText, 
+                    { 
+                      color: selectedReport.status === 'Resolved' ? '#10b981' : '#D88C51' 
+                    }
+                  ]}>
+                    {selectedReport.status === 'Resolved' ? 'Resolved ✓' : 'Active report'}
+                  </Text>
+                </View>
+                <Text style={[styles.dateText, { color: colors.textSecondary }]}>Reported {selectedReport.date}</Text>
               </View>
-              <Text style={[styles.dateText, { color: colors.textSecondary }]}>Reported {selectedReport.date}</Text>
-            </View>
 
-            {/* Dynamic Category Details Row (Matches the Restaurant Row in mockup) */}
-            <View style={styles.categoryLine}>
-              <View style={[styles.categoryCircle, { backgroundColor: colors.accentBg }]}>
-                <Feather 
-                  name={
-                    selectedReport.category === 'Roads' ? 'map-pin' : 
-                    selectedReport.category === 'Sanitation' ? 'trash-2' : 
-                    selectedReport.category === 'Water' ? 'droplet' : 'alert-triangle'
-                  } 
-                  size={18} 
-                  color={colors.accent} 
-                />
+              {/* Dynamic Category Details Row */}
+              <View style={styles.categoryLine}>
+                <View style={[styles.categoryCircle, { backgroundColor: colors.accentBg }]}>
+                  <Feather 
+                    name={
+                      selectedReport.category === 'Roads' ? 'map-pin' : 
+                      selectedReport.category === 'Sanitation' ? 'trash-2' : 
+                      selectedReport.category === 'Water' ? 'droplet' : 'alert-triangle'
+                    } 
+                    size={18} 
+                    color={colors.accent} 
+                  />
+                </View>
+                <View style={styles.categoryTextCol}>
+                  <Text style={[styles.categoryTitle, { color: colors.text }]}>
+                    {selectedReport.category} Department
+                  </Text>
+                  <Text style={[styles.categorySubtitle, { color: colors.textSecondary }]}>
+                    Priority Level {selectedReport.severity}/10 · {selectedReport.upvotes} Citizens Confirmed
+                  </Text>
+                </View>
               </View>
-              <View style={styles.categoryTextCol}>
-                <Text style={[styles.categoryTitle, { color: colors.text }]}>
-                  {selectedReport.category} Department
-                </Text>
-                <Text style={[styles.categorySubtitle, { color: colors.textSecondary }]}>
-                  Priority Level {selectedReport.severity}/10 · {selectedReport.upvotes} Citizens Confirmed
-                </Text>
-              </View>
-            </View>
 
-            {/* User Description Section */}
-            <Text style={[styles.detailSectionTitle, { color: colors.text }]}>User Description</Text>
-            <Text style={[styles.detailDesc, { color: colors.text }]}>{selectedReport.description}</Text>
+              {/* User Description Section */}
+              <Text style={[styles.detailSectionTitle, { color: colors.text }]}>User Description</Text>
+              <Text style={[styles.detailDesc, { color: colors.text }]}>{selectedReport.description}</Text>
 
-            {/* AI Diagnostics Review Section */}
-            <Text style={[styles.detailSectionTitle, { color: colors.text }]}>AI Diagnostics Review</Text>
-            <Text style={[styles.detailDesc, { color: colors.text, fontStyle: 'italic' }]}>
-              {selectedReport.aiReview || 'AI Diagnostics: Complete. No critical secondary hazards detected.'}
-            </Text>
+              {/* AI Diagnostics Review Section */}
+              <Text style={[styles.detailSectionTitle, { color: colors.text }]}>AI Diagnostics Review</Text>
+              <Text style={[styles.detailDesc, { color: colors.text, fontStyle: 'italic' }]}>
+                {selectedReport.aiReview || 'AI Diagnostics: Complete. No critical secondary hazards detected.'}
+              </Text>
 
-            {/* Horizontal Scroll list of images */}
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.imagesScroll} contentContainerStyle={{ gap: 10 }}>
-              <Image source={{ uri: selectedReport.image }} style={styles.scrollImage} />
-              <Image source={{ uri: 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=500' }} style={styles.scrollImage} />
-              <Image source={{ uri: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=500' }} style={styles.scrollImage} />
+              {/* Horizontal Scroll list of images */}
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.imagesScroll} contentContainerStyle={{ gap: 10 }}>
+                <Image source={{ uri: selectedReport.image }} style={styles.scrollImage} />
+                <Image source={{ uri: 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=500' }} style={styles.scrollImage} />
+                <Image source={{ uri: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=500' }} style={styles.scrollImage} />
+              </ScrollView>
             </ScrollView>
 
-            {/* Action buttons (Matches Mockup Outlined Directions & Filled Start Buttons) */}
+            {/* Action buttons sticky at bottom */}
             <View style={styles.detailActions}>
               <TouchableOpacity 
                 style={[styles.actionBtnOutline, { borderColor: colors.accent }]} 
@@ -774,11 +777,13 @@ const styles = StyleSheet.create({
   webView: {
     flex: 1,
   },
-  leftOverlay: {
+  statsOverlay: {
     position: 'absolute',
-    left: 16,
-    top: height * 0.18,
+    bottom: 152, // Floating above the FAB
+    left: 0,
+    right: 0,
     zIndex: 10,
+    alignItems: 'center',
   },
   topOverlay: {
     position: 'absolute',
@@ -886,22 +891,28 @@ const styles = StyleSheet.create({
   },
   detailOverlay: {
     position: 'absolute',
-    bottom: 30,
+    top: 0,
+    bottom: 0,
     left: 0,
     right: 0,
-    zIndex: 15,
-    paddingHorizontal: 20,
+    zIndex: 100, // Elevated to sit on top of everything
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 15, 8, 0.45)', // Dim overlay behind centered card
+    padding: 24,
   },
   detailCard: {
-    borderRadius: 32,
+    width: '100%',
+    maxWidth: 380,
+    borderRadius: 28,
     padding: 24,
     borderWidth: 1,
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.1,
     shadowRadius: 18,
     elevation: 8,
-    maxHeight: height * 0.62,
+    maxHeight: height * 0.75,
     overflow: 'hidden',
     ...Platform.select({
       web: {
@@ -934,6 +945,12 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#64748b',
     marginTop: 2,
+    fontFamily: Fonts.sans,
+  },
+  detailDeptText: {
+    fontSize: 12,
+    color: '#64748b',
+    marginTop: 2.5,
     fontFamily: Fonts.sans,
   },
   detailLocationText: {
@@ -1058,7 +1075,7 @@ const styles = StyleSheet.create({
   },
   fabContainer: {
     position: 'absolute',
-    bottom: 100,
+    bottom: 90, // Placed below the stats pill, above app-tabs
     left: 0,
     right: 0,
     zIndex: 10,

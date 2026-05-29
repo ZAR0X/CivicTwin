@@ -16,6 +16,7 @@ export interface Report {
   date: string;
   verifiedByUser?: boolean;
   aiReview?: string;
+  address?: string;
 }
 
 interface AppContextType {
