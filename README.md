@@ -1,56 +1,105 @@
-# Welcome to your Expo app 👋
+# CivicTwin Bhopal 🏙️
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+**CivicTwin Bhopal** is a premium, state-of-the-art civic reporting and command center application built on Expo (React Native for Mobile and Web). The platform empowers citizens to report civic hazards (like potholes, sewage leaks, or dangling wires), verifies them through community upvoting, and diagnoses issues instantly using Gemini AI.
 
-## Get started
+---
 
-1. Install dependencies
+## ✨ Features
 
-   ```bash
-   npm install
-   ```
+### 1. Interactive 3D Map & Satellite Mode
+* **3D Extrusions:** Extrudes buildings in 3D dynamically at zoom level 15+ using vector tiles.
+* **Snapchat-Style Thermal Heatmap:** Employs a Snapchat-style orange/yellow/blue density heatmap to visualize neighborhood hazard concentrations.
+* **ESRI Satellite Layer:** Toggles between a futuristic 3D vector map and high-resolution **ESRI World Imagery** satellite tiles.
+* **Smooth Navigation:** Includes map controls for resetting orientation (Compass), locking rotation, and locating the user.
 
-2. Start the app
+### 2. Custom Issue Blips (Lag & Drift Free)
+* **Visual Thumbnails:** Custom HTML elements render actual issue image thumbnails inside circular blips, complete with severity-based pastel glow rings (Red for High, Orange for Medium, Yellow for Low).
+* **Smooth Panning:** Engineered with a two-level DOM structure (outer container with absolute positioning and no transitions; inner child holding the visual layout with hover transforms) to ensure markers stick exactly to their locations without any dragging lag or drift.
+* **Conditional Labels:** Issue category and severity level labels appear dynamically when zooming past level 14.
 
-   ```bash
-   npx expo start
-   ```
+### 3. Centered Issue Details Card
+* Displays a centered, modal-style blurred detail sheet when clicking any marker.
+* Shows the issue image gallery, precise GPS coordinates, and a human-readable **Address**.
+* Separates information into distinct **User Description** and **AI Diagnostics Review** sections.
+* Includes community verification buttons allowing citizens to confirm active reports (+50 PTS).
 
-In the output, you'll find options to open the app in a
+### 4. Gemini AI Reporting Flow
+* **Live GPS Tracking:** Captures real-time latitude and longitude when initiating a report.
+* **Evidence Upload:** Captures camera evidence and accepts voice/typed descriptions.
+* **Gemini Diagnostics:** Runs local/server Gemini AI analysis to classify category, severity, and assign the appropriate municipal department.
+* **Count Syncing:** Submitting reports immediately increments the command center ticket count and plots a new blip at the reported location.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+---
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## 🛠️ Technology Stack
 
-## Get a fresh project
+* **Frontend Framework:** [Expo (React Native)](https://expo.dev) with File-based routing (Expo Router).
+* **Map Rendering:** [MapLibre GL JS](https://maplibre.org) rendered inside WebGL canvas overlays.
+* **Map Basemaps:** OpenFreeMap (Vector Styles) & ESRI World Imagery (Raster Satellite tiles).
+* **Styling & UI:** Vanilla CSS + Tailwind-equivalent clean styles, customized Glassmorphism (expo-blur), and harmonized Slate pastels.
+* **AI Diagnostics:** Google Gemini API (integrated via Supabase Edge Functions or simulated mock fallback).
+* **Database & Auth:** Supabase REST + PostgreSQL (optional, falls back automatically to local storage and mock databases).
 
-When you're ready, run:
+---
 
-```bash
-npm run reset-project
+## 📂 Project Structure
+
+```
+apps/user-app/
+├── src/
+│   ├── app/                      # Expo Router File-based navigation pages
+│   │   ├── _layout.tsx           # Context providers and root shell
+│   │   ├── index.tsx             # Main Map and Command Center Dashboard
+│   │   └── settings.tsx          # Settings screen (Theme toggles & Profile)
+│   ├── components/
+│   │   └── LoginScreen.tsx       # Glassmorphism login & OTP verification
+│   ├── constants/
+│   │   ├── mapHtml.ts            # HTML/JS template rendering the MapLibre canvas
+│   │   └── theme.ts              # Global premium typography and layout tokens
+│   ├── context/
+│   │   └── AppContext.tsx        # Global state (theme, user authentication, reports list)
+│   └── services/
+│       └── apiService.ts         # Supabase & Gemini API service with mock fallbacks
+├── package.json
+└── README.md
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+---
 
-### Other setup steps
+## 🚀 Getting Started
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+### 1. Install Dependencies
+```bash
+npm install
+```
 
-## Learn more
+### 2. Configure Credentials (Optional)
+Open `src/services/apiService.ts` and set your credentials to switch from local mock mode to a live Supabase backend:
+```typescript
+export const SUPABASE_URL = "YOUR_SUPABASE_URL"; 
+export const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+### 3. Start Development Server
+```bash
+# Run on Web (default port 8081)
+npm run web
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+# Start Expo Developer Tools
+npx expo start
+```
+* Press `w` to open in browser (web app).
+* Scan the QR code using the Expo Go app on iOS or Android to run native.
 
-## Join the community
+### 4. Build for Production (EAS Build)
+The project is configured for EAS Build (linked to Expo Application Services).
+```bash
+# Configure platforms
+eas build:configure
 
-Join our community of developers creating universal apps.
+# Trigger build
+eas build --platform all
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+---
+
