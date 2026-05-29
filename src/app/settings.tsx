@@ -15,6 +15,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useApp } from '@/context/AppContext';
+import { Fonts } from '@/constants/theme';
 
 // Reusable Glassmorphic container helper matching web backdrop filters
 interface GlassContainerProps {
@@ -76,8 +77,8 @@ export default function SettingsScreen() {
     cardBorder: isDark ? 'rgba(146, 229, 236, 0.15)' : 'rgba(0, 15, 8, 0.08)',
     inputBg: isDark ? 'rgba(146, 229, 236, 0.05)' : 'rgba(0, 15, 8, 0.03)',
     inputBorder: isDark ? 'rgba(146, 229, 236, 0.15)' : 'rgba(0, 15, 8, 0.08)',
-    accentOrange: '#FF6F00',
-    electricAqua: '#92E5EC',
+    accentOrange: '#D88C51',
+    electricAqua: '#A9D8DC',
     danger: '#ef4444'
   };
 
@@ -331,7 +332,6 @@ const styles = StyleSheet.create({
     opacity: 0.08,
     top: '10%',
     right: '-10%',
-    filter: Platform.OS === 'web' ? 'blur(90px)' : undefined,
   },
   header: {
     marginBottom: 24,
@@ -348,10 +348,12 @@ const styles = StyleSheet.create({
     fontSize: 26,
     fontWeight: 'bold',
     letterSpacing: -0.5,
+    fontFamily: Fonts.rounded,
   },
   subtitle: {
     fontSize: 13,
     marginTop: 4,
+    fontFamily: Fonts.sans,
   },
   sectionHeading: {
     fontSize: 14,
@@ -360,6 +362,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+    fontFamily: Fonts.rounded,
   },
   settingsCard: {
     borderRadius: 24,
@@ -407,6 +410,7 @@ const styles = StyleSheet.create({
   profilePointsText: {
     fontSize: 15,
     fontWeight: 'bold',
+    fontFamily: Fonts.rounded,
   },
   settingsSection: {
     borderTopWidth: 1,
@@ -420,6 +424,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: 8,
+    fontFamily: Fonts.rounded,
   },
   nameEditRow: {
     flexDirection: 'row',
@@ -434,6 +439,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     outlineStyle: 'none',
+    fontFamily: Fonts.sans,
   } as any,
   photoEditSection: {
     borderTopWidth: 1,
@@ -455,6 +461,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     fontSize: 12,
     outlineStyle: 'none',
+    fontFamily: Fonts.sans,
   } as any,
   saveBtnSmall: {
     height: 48,
@@ -467,6 +474,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 14,
     fontWeight: 'bold',
+    fontFamily: Fonts.rounded,
   },
   presetRow: {
     flexDirection: 'row',
@@ -504,10 +512,12 @@ const styles = StyleSheet.create({
   optionTitle: {
     fontSize: 15,
     fontWeight: '600',
+    fontFamily: Fonts.rounded,
   },
   optionDesc: {
     fontSize: 11.5,
     marginTop: 2,
+    fontFamily: Fonts.sans,
   },
   toggleSwitch: {
     width: 50,
@@ -535,5 +545,6 @@ const styles = StyleSheet.create({
   aboutText: {
     fontSize: 11,
     textAlign: 'center',
+    fontFamily: Fonts.sans,
   },
 });

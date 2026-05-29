@@ -15,6 +15,7 @@ export interface Report {
   status: string;
   date: string;
   verifiedByUser?: boolean;
+  aiReview?: string;
 }
 
 interface AppContextType {
@@ -162,7 +163,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         severity: newReportData.severity,
         description: newReportData.description,
         imageUrl: newReportData.image,
-        department: newReportData.department
+        department: newReportData.department,
+        aiReview: newReportData.aiReview
       });
 
       // 2. Refetch updated list
