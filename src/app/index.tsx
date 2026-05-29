@@ -22,6 +22,7 @@ import { getMapHtml, BHOPAL_COORDINATES } from '@/constants/mapHtml';
 import { useApp, Report } from '@/context/AppContext';
 import { router } from 'expo-router';
 import { apiService } from '@/services/apiService';
+import { Fonts } from '@/constants/theme';
 
 interface GlassContainerProps {
   children: React.ReactNode;
@@ -95,16 +96,16 @@ export default function HomeScreen() {
   // Palette: Onyx (000F08), Pumpkin Spice (FF6F00), Azure Mist (F4FFFE), Electric Aqua (92E5EC)
   const colors = {
     bg: isDark ? '#000F08' : '#F4FFFE',
-    cardBg: isDark ? 'rgba(18, 18, 20, 0.48)' : 'rgba(255, 255, 255, 0.55)', // Translucent card background matching arvin!
+    cardBg: isDark ? 'rgba(18, 18, 20, 0.48)' : 'rgba(255, 255, 255, 0.55)',
     text: isDark ? '#ffffff' : '#000F08',
-    textSecondary: isDark ? '#92E5EC' : '#64748b',
-    border: isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 15, 8, 0.08)', // Thin borders like arvin
-    accent: '#FF6F00',
-    electricAqua: '#92E5EC',
+    textSecondary: isDark ? '#A9D8DC' : '#64748b',
+    border: isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 15, 8, 0.08)',
+    accent: '#D88C51', // Muted pastel orange
+    electricAqua: '#A9D8DC', // Muted pastel aqua
     shadow: 'rgba(0, 15, 8, 0.04)',
-    accentBg: isDark ? 'rgba(255, 111, 0, 0.1)' : 'rgba(255, 111, 0, 0.05)',
-    inputBg: isDark ? 'rgba(146, 229, 236, 0.05)' : 'rgba(0, 15, 8, 0.03)',
-    inputBorder: isDark ? 'rgba(146, 229, 236, 0.15)' : 'rgba(0, 15, 8, 0.08)',
+    accentBg: isDark ? 'rgba(216, 140, 81, 0.1)' : 'rgba(216, 140, 81, 0.05)',
+    inputBg: isDark ? 'rgba(169, 216, 220, 0.05)' : 'rgba(0, 15, 8, 0.03)',
+    inputBorder: isDark ? 'rgba(169, 216, 220, 0.15)' : 'rgba(0, 15, 8, 0.08)',
   };
 
   // Sync reports list updates into WebView
@@ -290,13 +291,23 @@ export default function HomeScreen() {
   const handleSubmitReport = () => {
     if (!mockedAiResult || !clickCoords) return;
 
+    let categoryImage = 'https://images.unsplash.com/photo-1515162305285-0293e4767cc2?w=500';
+    if (mockedAiResult.category === 'Sanitation') {
+      categoryImage = 'https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?w=500';
+    } else if (mockedAiResult.category === 'Utility') {
+      categoryImage = 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=500';
+    } else if (mockedAiResult.category === 'Water') {
+      categoryImage = 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=500';
+    }
+
     addReport({
       coordinates: [clickCoords.longitude, clickCoords.latitude],
       category: mockedAiResult.category,
       severity: mockedAiResult.severity,
       description: mockedAiResult.description,
-      image: 'https://images.unsplash.com/photo-1515162305285-0293e4767cc2?w=500',
+      image: categoryImage,
       department: mockedAiResult.department,
+      aiReview: mockedAiResult.description
     });
 
     setIsReportModalVisible(false);
@@ -369,31 +380,26 @@ export default function HomeScreen() {
         )}
       </BlurTargetView>
 
-      {/* Sleek Floating Top Stats Pill */}
-      <SafeAreaView style={styles.topOverlay}>
-        <View style={styles.topContainer}>
-          {/* Quick Stats Pill */}
-          <View style={styles.statsPillWrapper}>
-            <GlassContainer
-              intensity={50}
-              tint="dark"
-              style={[
-                styles.statsPill, 
-                { 
-                  backgroundColor: 'rgba(0, 15, 8, 0.75)',
-                  borderColor: 'rgba(146, 229, 236, 0.15)',
-                  borderWidth: 1
-                }
-              ]}
-              blurTarget={mapTargetRef}
-            >
-              <View style={styles.pulseIndicator} />
-              <Text style={styles.statsPillText}>Bhopal Live Command: {reports.length} Tickets</Text>
-              <Text style={styles.pointsPill}>🏆 {userPoints} pts</Text>
-            </GlassContainer>
-          </View>
-        </View>
-      </SafeAreaView>
+      {/* Sleek Floating Top Stats Pill - Left Aligned */}
+      <View style={styles.leftOverlay}>
+        <GlassContainer
+          intensity={50}
+          tint="dark"
+          style={[
+            styles.statsPill, 
+            { 
+              backgroundColor: 'rgba(0, 15, 8, 0.75)',
+              borderColor: 'rgba(146, 229, 236, 0.15)',
+              borderWidth: 1
+            }
+          ]}
+          blurTarget={mapTargetRef}
+        >
+          <View style={styles.pulseIndicator} />
+          <Text style={styles.statsPillText}>Bhopal Live Command: {reports.length} Tickets</Text>
+          <Text style={styles.pointsPill}>🏆 {userPoints} pts</Text>
+        </GlassContainer>
+      </View>
 
       {/* Satellite, Compass & Location Controls */}
       <View style={styles.mapControls}>
@@ -454,6 +460,9 @@ export default function HomeScreen() {
               <View style={{ flex: 1 }}>
                 <Text style={[styles.detailTitle, { color: colors.text }]}>{selectedReport.category} Hazard</Text>
                 <Text style={[styles.detailAddress, { color: colors.textSecondary }]}>{selectedReport.department}</Text>
+                <Text style={[styles.detailLocationText, { color: colors.textSecondary }]}>
+                  📍 GPS: {selectedReport.coordinates[1].toFixed(6)}, {selectedReport.coordinates[0].toFixed(6)}
+                </Text>
               </View>
               <TouchableOpacity style={styles.bookmarkBtn}>
                 <Feather name="bookmark" size={20} color={colors.accent} />
@@ -464,13 +473,13 @@ export default function HomeScreen() {
               <View style={[
                 styles.openBadge, 
                 { 
-                  backgroundColor: selectedReport.status === 'Resolved' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(255, 111, 0, 0.1)' 
+                  backgroundColor: selectedReport.status === 'Resolved' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(216, 140, 81, 0.1)' 
                 }
               ]}>
                 <Text style={[
                   styles.openBadgeText, 
                   { 
-                    color: selectedReport.status === 'Resolved' ? '#10b981' : '#FF6F00' 
+                    color: selectedReport.status === 'Resolved' ? '#10b981' : '#D88C51' 
                   }
                 ]}>
                   {selectedReport.status === 'Resolved' ? 'Resolved ✓' : 'Active report'}
@@ -502,8 +511,15 @@ export default function HomeScreen() {
               </View>
             </View>
 
-            {/* Main description text */}
+            {/* User Description Section */}
+            <Text style={[styles.detailSectionTitle, { color: colors.text }]}>User Description</Text>
             <Text style={[styles.detailDesc, { color: colors.text }]}>{selectedReport.description}</Text>
+
+            {/* AI Diagnostics Review Section */}
+            <Text style={[styles.detailSectionTitle, { color: colors.text }]}>AI Diagnostics Review</Text>
+            <Text style={[styles.detailDesc, { color: colors.text, fontStyle: 'italic' }]}>
+              {selectedReport.aiReview || 'AI Diagnostics: Complete. No critical secondary hazards detected.'}
+            </Text>
 
             {/* Horizontal Scroll list of images */}
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.imagesScroll} contentContainerStyle={{ gap: 10 }}>
@@ -545,17 +561,37 @@ export default function HomeScreen() {
           style={styles.fabBtn}
           activeOpacity={0.9}
           onPress={() => {
-            setClickCoords({ latitude: 23.2324, longitude: 77.4262 });
-            setIsReportModalVisible(true);
-            resetReportFlow();
+            if (Platform.OS === 'web' && navigator.geolocation) {
+              navigator.geolocation.getCurrentPosition(
+                (position) => {
+                  setClickCoords({
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude,
+                  });
+                  setIsReportModalVisible(true);
+                  resetReportFlow();
+                },
+                (error) => {
+                  console.warn("Geolocation failed, using fallback coordinates:", error);
+                  setClickCoords({ latitude: 23.2324, longitude: 77.4262 });
+                  setIsReportModalVisible(true);
+                  resetReportFlow();
+                },
+                { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+              );
+            } else {
+              setClickCoords({ latitude: 23.2324, longitude: 77.4262 });
+              setIsReportModalVisible(true);
+              resetReportFlow();
+            }
           }}
         >
           <LinearGradient
-            colors={[colors.accent, '#d95f00']}
+            colors={[colors.accent, '#E7A87C']}
             style={styles.fabGradient}
           >
             <Feather name="camera" size={20} color="#fff" style={styles.fabIcon} />
-            <Text style={styles.fabText}>Report Hazard</Text>
+            <Text style={styles.fabText}>Report Issue</Text>
           </LinearGradient>
         </TouchableOpacity>
       </View>
@@ -690,7 +726,7 @@ export default function HomeScreen() {
                     onPress={handleSubmitReport}
                   >
                     <LinearGradient
-                      colors={[colors.accent, '#d95f00']}
+                      colors={[colors.accent, '#E7A87C']}
                       style={styles.submitGradient}
                     >
                       <Text style={styles.submitBtnText}>Submit Report (+25 PTS)</Text>
@@ -738,6 +774,12 @@ const styles = StyleSheet.create({
   webView: {
     flex: 1,
   },
+  leftOverlay: {
+    position: 'absolute',
+    left: 16,
+    top: height * 0.18,
+    zIndex: 10,
+  },
   topOverlay: {
     position: 'absolute',
     top: Platform.OS === 'ios' ? 0 : 10,
@@ -754,7 +796,7 @@ const styles = StyleSheet.create({
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 30, // capsule style search bar
+    borderRadius: 30,
     borderWidth: 1,
     height: 54,
     paddingHorizontal: 16,
@@ -765,12 +807,6 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 3,
     overflow: 'hidden',
-    ...Platform.select({
-      web: {
-        backdropFilter: 'blur(20px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-      } as any,
-    }),
   },
   searchIcon: {
     marginRight: 12,
@@ -780,7 +816,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '500',
     height: '100%',
-    outlineStyle: 'none',
+    fontFamily: Fonts.sans,
   } as any,
   micBtn: {
     width: 36,
@@ -811,27 +847,29 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#FF6F00',
+    backgroundColor: '#D88C51',
   },
   statsPillText: {
     color: '#ffffff',
     fontSize: 11.5,
     fontWeight: 'bold',
+    fontFamily: Fonts.sans,
   },
   pointsPill: {
-    color: '#92E5EC',
+    color: '#A9D8DC',
     fontSize: 11.5,
     fontWeight: 'bold',
     borderLeftWidth: 1,
     borderLeftColor: 'rgba(255, 255, 255, 0.2)',
     paddingLeft: 8,
+    fontFamily: Fonts.sans,
   },
   mapControls: {
     position: 'absolute',
     right: 16,
     top: height * 0.18,
     zIndex: 10,
-    gap: 10, // gap between control buttons
+    gap: 10,
   },
   circleBtn: {
     width: 44,
@@ -848,15 +886,15 @@ const styles = StyleSheet.create({
   },
   detailOverlay: {
     position: 'absolute',
-    bottom: 30, // Floats cleanly at bottom center
+    bottom: 30,
     left: 0,
     right: 0,
     zIndex: 15,
-    paddingHorizontal: 20, // Clean padding from left and right
+    paddingHorizontal: 20,
   },
   detailCard: {
-    borderRadius: 36, // Increased to 36 for extra premium rounded feel!
-    padding: 28, // Increased padding
+    borderRadius: 32,
+    padding: 24,
     borderWidth: 1,
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 12 },
@@ -890,11 +928,19 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     letterSpacing: -0.5,
+    fontFamily: Fonts.rounded,
   },
   detailAddress: {
     fontSize: 13,
     color: '#64748b',
     marginTop: 2,
+    fontFamily: Fonts.sans,
+  },
+  detailLocationText: {
+    fontSize: 11.5,
+    color: '#94a3b8',
+    marginTop: 4,
+    fontFamily: Fonts.sans,
   },
   bookmarkBtn: {
     padding: 4,
@@ -906,27 +952,29 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   openBadge: {
-    borderRadius: 14, // Capsule badge
+    borderRadius: 14,
     paddingVertical: 5,
     paddingHorizontal: 12,
   },
   openBadgeText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: 'bold',
     textTransform: 'uppercase',
+    fontFamily: Fonts.rounded,
   },
   dateText: {
     fontSize: 12,
+    fontFamily: Fonts.sans,
   },
   categoryLine: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    marginBottom: 18,
+    marginBottom: 16,
     marginTop: 4,
   },
   categoryCircle: {
-    width: 44, // Matches 44 diameter in mockup
+    width: 44,
     height: 44,
     borderRadius: 22,
     justifyContent: 'center',
@@ -938,23 +986,36 @@ const styles = StyleSheet.create({
   categoryTitle: {
     fontSize: 15.5,
     fontWeight: '700',
+    fontFamily: Fonts.rounded,
   },
   categorySubtitle: {
     fontSize: 12,
     marginTop: 2.5,
+    fontFamily: Fonts.sans,
+  },
+  detailSectionTitle: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    marginTop: 12,
+    marginBottom: 6,
+    fontFamily: Fonts.rounded,
   },
   detailDesc: {
-    fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 16,
+    fontSize: 13.5,
+    lineHeight: 19,
+    marginBottom: 12,
+    fontFamily: Fonts.sans,
   },
   imagesScroll: {
     flexDirection: 'row',
     marginBottom: 20,
+    marginTop: 8,
   },
   scrollImage: {
     width: 105,
-    height: 120, // Tall ratio like screenshot images
+    height: 120,
     borderRadius: 16,
   },
   detailActions: {
@@ -963,20 +1024,21 @@ const styles = StyleSheet.create({
   },
   actionBtnOutline: {
     flex: 1,
-    height: 52, // Thick capsule button height
-    borderRadius: 26,
-    borderWidth: 1.8, // Slightly thicker border
+    height: 50,
+    borderRadius: 25,
+    borderWidth: 1.8,
     justifyContent: 'center',
     alignItems: 'center',
   },
   actionTextOutline: {
     fontWeight: '700',
     fontSize: 14.5,
+    fontFamily: Fonts.rounded,
   },
   actionBtnFilled: {
     flex: 1,
-    height: 52, // Thick capsule button height
-    borderRadius: 26,
+    height: 50,
+    borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -992,10 +1054,11 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontWeight: 'bold',
     fontSize: 14,
+    fontFamily: Fonts.rounded,
   },
   fabContainer: {
     position: 'absolute',
-    bottom: 100, // Sits cleanly above the capsule tab bar
+    bottom: 100,
     left: 0,
     right: 0,
     zIndex: 10,
@@ -1005,7 +1068,7 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 25,
     overflow: 'hidden',
-    shadowColor: '#FF6F00',
+    shadowColor: '#D88C51',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 10,
@@ -1025,6 +1088,7 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontWeight: 'bold',
     fontSize: 15,
+    fontFamily: Fonts.rounded,
   },
   modalBg: {
     flex: 1,
@@ -1035,7 +1099,7 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFill,
   },
   modalContent: {
-    borderTopLeftRadius: 36, // More rounded top
+    borderTopLeftRadius: 36,
     borderTopRightRadius: 36,
     padding: 28,
     height: height * 0.82,
@@ -1062,6 +1126,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 19,
     fontWeight: 'bold',
+    fontFamily: Fonts.rounded,
   },
   modalCloseBtn: {
     padding: 4,
@@ -1078,6 +1143,7 @@ const styles = StyleSheet.create({
   cameraLabel: {
     fontSize: 15,
     fontWeight: 'bold',
+    fontFamily: Fonts.rounded,
   },
   cameraPreviewContainer: {
     height: 160,
@@ -1103,6 +1169,7 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 11,
     fontWeight: '600',
+    fontFamily: Fonts.rounded,
   },
   messageInput: {
     borderRadius: 12,
@@ -1113,6 +1180,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
     marginBottom: 12,
     outlineStyle: 'none',
+    fontFamily: Fonts.sans,
   } as any,
   voiceRow: {
     flexDirection: 'row',
@@ -1131,6 +1199,7 @@ const styles = StyleSheet.create({
   voiceIcon: {
     fontSize: 12.5,
     fontWeight: '600',
+    fontFamily: Fonts.rounded,
   },
   aiButton: {
     height: 48,
@@ -1147,6 +1216,7 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontWeight: 'bold',
     fontSize: 14,
+    fontFamily: Fonts.rounded,
   },
   disabledBtn: {
     opacity: 0.7,
@@ -1163,6 +1233,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+    fontFamily: Fonts.rounded,
   },
   aiFieldRow: {
     flexDirection: 'row',
@@ -1172,11 +1243,13 @@ const styles = StyleSheet.create({
     width: 90,
     fontSize: 12.5,
     fontWeight: '600',
+    fontFamily: Fonts.sans,
   },
   aiFieldValue: {
     flex: 1,
     fontSize: 12.5,
     fontWeight: '600',
+    fontFamily: Fonts.sans,
   },
   aiResultDesc: {
     fontSize: 13.5,
@@ -1185,6 +1258,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     paddingTop: 10,
     marginBottom: 12,
+    fontFamily: Fonts.sans,
   },
   submitButton: {
     height: 48,
@@ -1200,6 +1274,7 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontWeight: 'bold',
     fontSize: 14,
+    fontFamily: Fonts.rounded,
   },
   pointsOverlay: {
     position: 'absolute',
@@ -1230,16 +1305,19 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#ffffff',
     marginBottom: 4,
+    fontFamily: Fonts.rounded,
   },
   overlayAmount: {
     fontSize: 32,
     fontWeight: '900',
-    color: '#FF6F00',
+    color: '#D88C51',
     marginBottom: 6,
+    fontFamily: Fonts.rounded,
   },
   overlayDesc: {
     fontSize: 10.5,
     color: '#94a3b8',
     textAlign: 'center',
+    fontFamily: Fonts.sans,
   },
 });

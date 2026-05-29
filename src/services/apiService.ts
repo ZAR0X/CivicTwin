@@ -52,7 +52,8 @@ export const apiService = {
         upvotes: r.upvotes,
         department: r.assigned_department,
         status: r.status,
-        date: new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        date: new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        aiReview: r.ai_description || r.ai_review || 'AI Diagnostics: Complete.'
       }));
     } catch (error) {
       console.error("[CivicTwin API] Error fetching live reports, falling back to mock:", error);
@@ -72,12 +73,27 @@ export const apiService = {
       description: string;
       imageUrl: string;
       department: string;
+      aiReview?: string;
     },
     reporterToken?: string
   ): Promise<any> {
     if (!isConfigured) {
       console.log("[CivicTwin API] Simulating local database submission.");
-      return { success: true, id: `rep-${Date.now()}` };
+      const newReport = {
+        id: `rep-${Date.now()}`,
+        coordinates: [report.longitude, report.latitude],
+        category: report.category,
+        severity: report.severity,
+        description: report.description,
+        image: report.imageUrl,
+        upvotes: 0,
+        department: report.department,
+        status: "Pending",
+        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        aiReview: report.aiReview || "AI Diagnostics: Processing submitted issue image."
+      };
+      MOCK_REPORTS.push(newReport as any);
+      return { success: true, id: newReport.id };
     }
 
     try {
@@ -89,7 +105,8 @@ export const apiService = {
         description: report.description,
         image_url: report.imageUrl,
         assigned_department: report.department,
-        status: "Pending"
+        status: "Pending",
+        ai_description: report.aiReview
       };
 
       const res = await fetch(`${SUPABASE_URL}/rest/v1/reports`, {

@@ -241,7 +241,7 @@ export const MOCK_REPORTS = [
   },
 ];;
 
-export const getMapHtml = (reports: typeof MOCK_REPORTS, theme: 'light' | 'dark' = 'light') => {
+export const getMapHtml = (reports: any[], theme: 'light' | 'dark' = 'light') => {
   const geojson = {
     type: 'FeatureCollection',
     features: reports.map((r) => ({
@@ -260,6 +260,7 @@ export const getMapHtml = (reports: typeof MOCK_REPORTS, theme: 'light' | 'dark'
         department: r.department,
         status: r.status,
         date: r.date,
+        aiReview: (r as any).aiReview,
       },
     })),
   };
@@ -279,11 +280,11 @@ export const getMapHtml = (reports: typeof MOCK_REPORTS, theme: 'light' | 'dark'
     
     /* Custom Marker Styling */
     .custom-marker {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
-      border: 2px solid #10b981; /* Default to green/safe border */
-      box-shadow: 0 0 12px rgba(16, 185, 129, 0.5);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 2px solid #a7f3d0; /* Muted pastel green */
+      box-shadow: 0 0 12px rgba(167, 243, 208, 0.4);
       background-size: cover;
       background-position: center;
       cursor: pointer;
@@ -294,10 +295,10 @@ export const getMapHtml = (reports: typeof MOCK_REPORTS, theme: 'light' | 'dark'
       z-index: 999;
     }
     
-    /* Severity border colors */
-    .border-high { border-color: #ef4444; box-shadow: 0 0 15px rgba(239, 68, 68, 0.7); }
-    .border-medium { border-color: #f97316; box-shadow: 0 0 15px rgba(249, 115, 22, 0.6); }
-    .border-low { border-color: #eab308; box-shadow: 0 0 12px rgba(234, 179, 8, 0.5); }
+    /* Severity border colors - Muted pastels */
+    .border-high { border-color: #fca5a5; box-shadow: 0 0 15px rgba(252, 165, 165, 0.6); }
+    .border-medium { border-color: #fdbb2d; box-shadow: 0 0 15px rgba(253, 187, 45, 0.5); }
+    .border-low { border-color: #fef08a; box-shadow: 0 0 12px rgba(254, 240, 138, 0.4); }
     
     /* Pin label marker overlay */
     .marker-label {
@@ -600,55 +601,55 @@ export const getMapHtml = (reports: typeof MOCK_REPORTS, theme: 'light' | 'dark'
       activeMarkers.forEach(m => m.remove());
       activeMarkers = [];
 
-      // Only display custom thumbnails if zoomed in past 14
-      if (zoom >= 14) {
-        geojsonData.features.forEach((feature) => {
-          const props = feature.properties;
-          const coords = feature.geometry.coordinates;
+      // Always display custom markers
+      geojsonData.features.forEach((feature) => {
+        const props = feature.properties;
+        const coords = feature.geometry.coordinates;
 
-          // Create DOM element
-          const el = document.createElement('div');
-          el.className = 'custom-marker';
-          el.style.backgroundImage = 'url(' + props.image + ')';
+        // Create DOM element
+        const el = document.createElement('div');
+        el.className = 'custom-marker';
+        el.style.backgroundImage = 'url(' + props.image + ')';
 
-          // Assign border color based on severity
-          if (props.severity >= 8) {
-            el.classList.add('border-high');
-          } else if (props.severity >= 5) {
-            el.classList.add('border-medium');
-          } else {
-            el.classList.add('border-low');
-          }
+        // Assign border color based on severity
+        if (props.severity >= 8) {
+          el.classList.add('border-high');
+        } else if (props.severity >= 5) {
+          el.classList.add('border-medium');
+        } else {
+          el.classList.add('border-low');
+        }
 
-          // Add Category Label overlay
+        // Add Category Label overlay only when zoomed in past 14
+        if (zoom >= 14) {
           const label = document.createElement('div');
           label.className = 'marker-label';
           label.innerText = props.category + ' (Lvl ' + props.severity + ')';
           el.appendChild(label);
+        }
 
-          // Add click event
-          el.addEventListener('click', (e) => {
-            e.stopPropagation();
-            sendToRN({
-              type: 'SHOW_REPORT',
-              data: props
-            });
-            // Center map on marker on click
-            map.easeTo({
-              center: coords,
-              pitch: 60,
-              duration: 500
-            });
+        // Add click event
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          sendToRN({
+            type: 'SHOW_REPORT',
+            data: props
           });
-
-          // Add to map
-          const marker = new maplibregl.Marker(el)
-            .setLngLat(coords)
-            .addTo(map);
-
-          activeMarkers.push(marker);
+          // Center map on marker on click
+          map.easeTo({
+            center: coords,
+            pitch: 60,
+            duration: 500
+          });
         });
-      }
+
+        // Add to map
+        const marker = new maplibregl.Marker(el)
+          .setLngLat(coords)
+          .addTo(map);
+
+        activeMarkers.push(marker);
+      });
     }
 
     document.addEventListener('DOMContentLoaded', initMap);
