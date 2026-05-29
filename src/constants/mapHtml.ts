@@ -5,7 +5,7 @@ export const BHOPAL_COORDINATES = {
   longitude: 77.4126,
 };
 
-// Generate 25 mock reports in Bhopal
+// Generate 17 mock reports in Bhopal
 export const MOCK_REPORTS = [
   // MP Nagar (Commercial Hub - High Density)
   {
@@ -19,6 +19,7 @@ export const MOCK_REPORTS = [
     department: 'Municipal Corporation (PWD)',
     status: 'Pending',
     date: 'May 25, 2026',
+    aiReview: 'AI Diagnostics: Severe pavement breach detected (approx 18cm depth). Immediate asphalt patching required to prevent vehicle damage.',
   },
   {
     id: 'rep-2',
@@ -31,6 +32,7 @@ export const MOCK_REPORTS = [
     department: 'Sanitation Dept',
     status: 'Assigned',
     date: 'May 26, 2026',
+    aiReview: 'AI Diagnostics: Refuse overflow violates environmental sanitation protocols. High risk of pest infestation.',
   },
   {
     id: 'rep-3',
@@ -43,6 +45,7 @@ export const MOCK_REPORTS = [
     department: 'MPEB (Electricity Board)',
     status: 'In Progress',
     date: 'May 24, 2026',
+    aiReview: 'AI Diagnostics: Critical electrical hazard. Exposed live conductors at public access level. Dispatching urgent repair crew.',
   },
   {
     id: 'rep-4',
@@ -55,6 +58,7 @@ export const MOCK_REPORTS = [
     department: 'Water Works Dept',
     status: 'Pending',
     date: 'May 26, 2026',
+    aiReview: 'AI Diagnostics: Pressurized clean water leakage. Localized soil liquefaction hazard. Priority 2 repair recommended.',
   },
 
   // TT Nagar & New Market
@@ -69,6 +73,7 @@ export const MOCK_REPORTS = [
     department: 'Municipal Corporation (PWD)',
     status: 'Assigned',
     date: 'May 25, 2026',
+    aiReview: 'AI Diagnostics: Minor structural misalignment in pedestrian walkway. Recommended leveling to restore compliance.',
   },
   {
     id: 'rep-6',
@@ -81,6 +86,7 @@ export const MOCK_REPORTS = [
     department: 'Sanitation Dept',
     status: 'Pending',
     date: 'May 26, 2026',
+    aiReview: 'AI Diagnostics: Biohazard risk due to open sewage venting. Recommended immediate containment and chemical treatment.',
   },
   {
     id: 'rep-7',
@@ -93,6 +99,7 @@ export const MOCK_REPORTS = [
     department: 'MPEB (Electricity Board)',
     status: 'Pending',
     date: 'May 26, 2026',
+    aiReview: 'AI Diagnostics: Illumination grid failure. Elevated risk for night pedestrian safety. Scheduled bulb replacement.',
   },
 
   // Kolar Road (Residential Hub - Waterlogging/Road issues)
@@ -107,6 +114,7 @@ export const MOCK_REPORTS = [
     department: 'Municipal Corporation (PWD)',
     status: 'In Progress',
     date: 'May 23, 2026',
+    aiReview: 'AI Diagnostics: Severe arterial route degradation. Subsurface stability compromised. Coordination with sewage contractor requested.',
   },
   {
     id: 'rep-9',
@@ -119,6 +127,7 @@ export const MOCK_REPORTS = [
     department: 'Water Works Dept',
     status: 'Pending',
     date: 'May 25, 2026',
+    aiReview: 'AI Diagnostics: Inadequate drainage throughput causing blockages. Requires immediate pump out and clearing.',
   },
   {
     id: 'rep-10',
@@ -131,6 +140,7 @@ export const MOCK_REPORTS = [
     department: 'Sanitation Dept',
     status: 'Assigned',
     date: 'May 24, 2026',
+    aiReview: 'AI Diagnostics: Accumulation of organic waste. Moderate risk of neighborhood rodent infestation.',
   },
 
   // Arera Colony
@@ -145,6 +155,7 @@ export const MOCK_REPORTS = [
     department: 'MPEB (Electricity Board)',
     status: 'Pending',
     date: 'May 26, 2026',
+    aiReview: 'AI Diagnostics: Structural mechanical stress on electrical cables. Urgent pruning and tension restoration required.',
   },
   {
     id: 'rep-12',
@@ -157,6 +168,7 @@ export const MOCK_REPORTS = [
     department: 'Municipal Corporation (PWD)',
     status: 'Resolved',
     date: 'May 22, 2026',
+    aiReview: 'AI Diagnostics: Poor visibility warning indicator. Minor hazard level. Resolved via painting crew dispatch.',
   },
 
   // VIP Road & Upper Lake (Scenic area - Sanitation/Safety)
@@ -171,6 +183,7 @@ export const MOCK_REPORTS = [
     department: 'Sanitation Dept',
     status: 'Pending',
     date: 'May 25, 2026',
+    aiReview: 'AI Diagnostics: High accumulation of non-biodegradable waste in freshwater zone. Impact: high aquatic bio-toxicity.',
   },
   {
     id: 'rep-14',
@@ -183,6 +196,7 @@ export const MOCK_REPORTS = [
     department: 'Municipal Corporation (PWD)',
     status: 'Assigned',
     date: 'May 24, 2026',
+    aiReview: 'AI Diagnostics: Integrity failure of physical safety guardrail. Pedestrian fall risk identified near shoreline.',
   },
 
   // Old Bhopal (Ch चौक / Jahangirabad - Narrow crowded streets)
@@ -197,6 +211,7 @@ export const MOCK_REPORTS = [
     department: 'Water Works Dept',
     status: 'In Progress',
     date: 'May 25, 2026',
+    aiReview: 'AI Diagnostics: High-severity sewer line surcharge. High potential for public health hazard and commercial disruption.',
   },
   {
     id: 'rep-16',
@@ -209,6 +224,7 @@ export const MOCK_REPORTS = [
     department: 'MPEB (Electricity Board)',
     status: 'Pending',
     date: 'May 26, 2026',
+    aiReview: 'AI Diagnostics: Thermal damage to neighborhood sub-station. Total phase loss. Transformer replacement required.',
   },
   {
     id: 'rep-17',
@@ -221,8 +237,9 @@ export const MOCK_REPORTS = [
     department: 'Sanitation Dept',
     status: 'Pending',
     date: 'May 26, 2026',
+    aiReview: 'AI Diagnostics: Commercial packaging refuse dump blocking pedestrian pathway. Fines recommended for regional vendors.',
   },
-];
+];;
 
 export const getMapHtml = (reports: typeof MOCK_REPORTS, theme: 'light' | 'dark' = 'light') => {
   const geojson = {
