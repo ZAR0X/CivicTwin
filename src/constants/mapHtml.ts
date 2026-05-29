@@ -20,6 +20,7 @@ export const MOCK_REPORTS = [
     status: 'Pending',
     date: 'May 25, 2026',
     aiReview: 'AI Diagnostics: Severe pavement breach detected (approx 18cm depth). Immediate asphalt patching required to prevent vehicle damage.',
+    address: 'Zone-II, MP Nagar, Bhopal',
   },
   {
     id: 'rep-2',
@@ -33,6 +34,7 @@ export const MOCK_REPORTS = [
     status: 'Assigned',
     date: 'May 26, 2026',
     aiReview: 'AI Diagnostics: Refuse overflow violates environmental sanitation protocols. High risk of pest infestation.',
+    address: 'Near Jyoti Cineplex, Zone-I, MP Nagar, Bhopal',
   },
   {
     id: 'rep-3',
@@ -46,6 +48,7 @@ export const MOCK_REPORTS = [
     status: 'In Progress',
     date: 'May 24, 2026',
     aiReview: 'AI Diagnostics: Critical electrical hazard. Exposed live conductors at public access level. Dispatching urgent repair crew.',
+    address: 'Bus Stop, Zone-II, MP Nagar, Bhopal',
   },
   {
     id: 'rep-4',
@@ -59,6 +62,7 @@ export const MOCK_REPORTS = [
     status: 'Pending',
     date: 'May 26, 2026',
     aiReview: 'AI Diagnostics: Pressurized clean water leakage. Localized soil liquefaction hazard. Priority 2 repair recommended.',
+    address: 'DB Mall Road, MP Nagar, Bhopal',
   },
 
   // TT Nagar & New Market
@@ -74,6 +78,7 @@ export const MOCK_REPORTS = [
     status: 'Assigned',
     date: 'May 25, 2026',
     aiReview: 'AI Diagnostics: Minor structural misalignment in pedestrian walkway. Recommended leveling to restore compliance.',
+    address: 'New Market Main Entrance, TT Nagar, Bhopal',
   },
   {
     id: 'rep-6',
@@ -87,6 +92,7 @@ export const MOCK_REPORTS = [
     status: 'Pending',
     date: 'May 26, 2026',
     aiReview: 'AI Diagnostics: Biohazard risk due to open sewage venting. Recommended immediate containment and chemical treatment.',
+    address: 'Jawahar Chowk, TT Nagar, Bhopal',
   },
   {
     id: 'rep-7',
@@ -100,6 +106,7 @@ export const MOCK_REPORTS = [
     status: 'Pending',
     date: 'May 26, 2026',
     aiReview: 'AI Diagnostics: Illumination grid failure. Elevated risk for night pedestrian safety. Scheduled bulb replacement.',
+    address: 'Main Shopping Stretch, New Market, Bhopal',
   },
 
   // Kolar Road (Residential Hub - Waterlogging/Road issues)
@@ -115,6 +122,7 @@ export const MOCK_REPORTS = [
     status: 'In Progress',
     date: 'May 23, 2026',
     aiReview: 'AI Diagnostics: Severe arterial route degradation. Subsurface stability compromised. Coordination with sewage contractor requested.',
+    address: 'Kolar Main Road, Bhopal',
   },
   {
     id: 'rep-9',
@@ -128,6 +136,7 @@ export const MOCK_REPORTS = [
     status: 'Pending',
     date: 'May 25, 2026',
     aiReview: 'AI Diagnostics: Inadequate drainage throughput causing blockages. Requires immediate pump out and clearing.',
+    address: 'Saket Nagar Entrance, Kolar Road, Bhopal',
   },
   {
     id: 'rep-10',
@@ -141,6 +150,7 @@ export const MOCK_REPORTS = [
     status: 'Assigned',
     date: 'May 24, 2026',
     aiReview: 'AI Diagnostics: Accumulation of organic waste. Moderate risk of neighborhood rodent infestation.',
+    address: 'Nehru Park Corner, Kolar Road, Bhopal',
   },
 
   // Arera Colony
@@ -156,6 +166,7 @@ export const MOCK_REPORTS = [
     status: 'Pending',
     date: 'May 26, 2026',
     aiReview: 'AI Diagnostics: Structural mechanical stress on electrical cables. Urgent pruning and tension restoration required.',
+    address: 'E-7 Road, Sector 3, Arera Colony, Bhopal',
   },
   {
     id: 'rep-12',
@@ -169,6 +180,7 @@ export const MOCK_REPORTS = [
     status: 'Resolved',
     date: 'May 22, 2026',
     aiReview: 'AI Diagnostics: Poor visibility warning indicator. Minor hazard level. Resolved via painting crew dispatch.',
+    address: 'Sector 2 Main Crossing, Arera Colony, Bhopal',
   },
 
   // VIP Road & Upper Lake (Scenic area - Sanitation/Safety)
@@ -184,6 +196,7 @@ export const MOCK_REPORTS = [
     status: 'Pending',
     date: 'May 25, 2026',
     aiReview: 'AI Diagnostics: High accumulation of non-biodegradable waste in freshwater zone. Impact: high aquatic bio-toxicity.',
+    address: 'Lake Promenade, VIP Road, Bhopal',
   },
   {
     id: 'rep-14',
@@ -197,6 +210,7 @@ export const MOCK_REPORTS = [
     status: 'Assigned',
     date: 'May 24, 2026',
     aiReview: 'AI Diagnostics: Integrity failure of physical safety guardrail. Pedestrian fall risk identified near shoreline.',
+    address: 'Near Boat Club, VIP Road, Upper Lake, Bhopal',
   },
 
   // Old Bhopal (Ch चौक / Jahangirabad - Narrow crowded streets)
@@ -212,6 +226,7 @@ export const MOCK_REPORTS = [
     status: 'In Progress',
     date: 'May 25, 2026',
     aiReview: 'AI Diagnostics: High-severity sewer line surcharge. High potential for public health hazard and commercial disruption.',
+    address: 'Chowk Bazaar Main Market, Old Bhopal, Bhopal',
   },
   {
     id: 'rep-16',
@@ -225,6 +240,7 @@ export const MOCK_REPORTS = [
     status: 'Pending',
     date: 'May 26, 2026',
     aiReview: 'AI Diagnostics: Thermal damage to neighborhood sub-station. Total phase loss. Transformer replacement required.',
+    address: 'Jahangirabad Commercial Area, Bhopal',
   },
   {
     id: 'rep-17',
@@ -238,6 +254,7 @@ export const MOCK_REPORTS = [
     status: 'Pending',
     date: 'May 26, 2026',
     aiReview: 'AI Diagnostics: Commercial packaging refuse dump blocking pedestrian pathway. Fines recommended for regional vendors.',
+    address: 'Hanuman Ganj Road, Old Bhopal, Bhopal',
   },
 ];;
 
@@ -252,6 +269,7 @@ export const getMapHtml = (reports: any[], theme: 'light' | 'dark' = 'light') =>
       },
       properties: {
         id: r.id,
+        coordinates: r.coordinates,
         category: r.category,
         severity: r.severity,
         description: r.description,
@@ -261,6 +279,7 @@ export const getMapHtml = (reports: any[], theme: 'light' | 'dark' = 'light') =>
         status: r.status,
         date: r.date,
         aiReview: (r as any).aiReview,
+        address: r.address || 'Bhopal City',
       },
     })),
   };
@@ -278,19 +297,31 @@ export const getMapHtml = (reports: any[], theme: 'light' | 'dark' = 'light') =>
     body { margin: 0; padding: 0; background-color: #0b0f19; overflow: hidden; }
     #map { position: absolute; top: 0; bottom: 0; width: 100%; height: 100%; }
     
-    /* Custom Marker Styling */
-    .custom-marker {
+    /* Custom Marker Container (positioned by MapLibre, no transform transitions!) */
+    .custom-marker-container {
       width: 36px;
       height: 36px;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    /* Custom Marker Visual Element (inside container, handles hover scaling transition) */
+    .custom-marker {
+      width: 100%;
+      height: 100%;
       border-radius: 50%;
       border: 2px solid #a7f3d0; /* Muted pastel green */
       box-shadow: 0 0 12px rgba(167, 243, 208, 0.4);
       background-size: cover;
       background-position: center;
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      background-color: #3b82f6; /* Fallback blue */
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s, box-shadow 0.3s;
     }
-    .custom-marker:hover {
+    
+    .custom-marker-container:hover .custom-marker {
       transform: scale(1.2) translateY(-4px);
       z-index: 999;
     }
@@ -362,7 +393,7 @@ export const getMapHtml = (reports: any[], theme: 'light' | 'dark' = 'light') =>
         if (!map.getSource('satellite')) {
           map.addSource('satellite', {
             type: 'raster',
-            tiles: ['https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}'],
+            tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
             tileSize: 256
           });
         }
@@ -470,8 +501,10 @@ export const getMapHtml = (reports: any[], theme: 'light' | 'dark' = 'light') =>
         // Handle raw map clicks to report a new location
         map.off('click');
         map.on('click', (e) => {
-          // Prevent click if clicking a marker
-          if (e.originalEvent.target.classList.contains('custom-marker')) return;
+          if (window.justClickedMarker) {
+            window.justClickedMarker = false;
+            return;
+          }
           
           sendToRN({
             type: 'MAP_CLICK',
@@ -606,7 +639,11 @@ export const getMapHtml = (reports: any[], theme: 'light' | 'dark' = 'light') =>
         const props = feature.properties;
         const coords = feature.geometry.coordinates;
 
-        // Create DOM element
+        // Create DOM container
+        const container = document.createElement('div');
+        container.className = 'custom-marker-container';
+
+        // Create DOM visual element
         const el = document.createElement('div');
         el.className = 'custom-marker';
         el.style.backgroundImage = 'url(' + props.image + ')';
@@ -620,17 +657,21 @@ export const getMapHtml = (reports: any[], theme: 'light' | 'dark' = 'light') =>
           el.classList.add('border-low');
         }
 
+        container.appendChild(el);
+
         // Add Category Label overlay only when zoomed in past 14
         if (zoom >= 14) {
           const label = document.createElement('div');
           label.className = 'marker-label';
           label.innerText = props.category + ' (Lvl ' + props.severity + ')';
-          el.appendChild(label);
+          container.appendChild(label);
         }
 
-        // Add click event
-        el.addEventListener('click', (e) => {
+        // Add click event to the container
+        container.addEventListener('click', (e) => {
           e.stopPropagation();
+          window.justClickedMarker = true;
+          setTimeout(() => { window.justClickedMarker = false; }, 350);
           sendToRN({
             type: 'SHOW_REPORT',
             data: props
@@ -644,7 +685,7 @@ export const getMapHtml = (reports: any[], theme: 'light' | 'dark' = 'light') =>
         });
 
         // Add to map
-        const marker = new maplibregl.Marker(el)
+        const marker = new maplibregl.Marker({ element: container })
           .setLngLat(coords)
           .addTo(map);
 

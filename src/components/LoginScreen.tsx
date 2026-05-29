@@ -82,7 +82,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   const colors = {
     bg: ['#ffffff', '#ffffff'],
     text: '#000F08',
-    textSecondary: '#475569',
+    textSecondary: '#334155', // Darker slate gray for better readability
     cardBg: 'rgba(255, 255, 255, 0.85)',
     inputBg: 'rgba(0, 15, 8, 0.03)',
     inputBorder: 'rgba(0, 15, 8, 0.08)',
@@ -552,7 +552,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 11,
-    color: '#64748b',
+    color: '#334155',
     marginTop: 10,
     lineHeight: 16,
     fontFamily: Fonts.sans,
@@ -646,7 +646,7 @@ const styles = StyleSheet.create({
   },
   promptDesc: {
     fontSize: 13,
-    color: '#475569',
+    color: '#334155',
     textAlign: 'center',
     lineHeight: 18,
     marginBottom: 24,
@@ -668,7 +668,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.02)',
   },
   promptBtnTextSecondary: {
-    color: '#475569',
+    color: '#334155',
     fontWeight: 'bold',
     fontSize: 14,
     fontFamily: Fonts.rounded,
