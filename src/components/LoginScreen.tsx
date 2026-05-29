@@ -11,7 +11,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
+import { BlurView, BlurTargetView } from 'expo-blur';
 import { useApp } from '@/context/AppContext';
 
 interface GlassContainerProps {
@@ -19,9 +19,10 @@ interface GlassContainerProps {
   style: any;
   intensity: number;
   tint: 'light' | 'dark';
+  blurTarget?: React.RefObject<any>;
 }
 
-function GlassContainer({ children, style, intensity, tint }: GlassContainerProps) {
+function GlassContainer({ children, style, intensity, tint, blurTarget }: GlassContainerProps) {
   if (Platform.OS === 'web') {
     return (
       <View 
@@ -33,7 +34,13 @@ function GlassContainer({ children, style, intensity, tint }: GlassContainerProp
     );
   }
   return (
-    <BlurView intensity={intensity} tint={tint} style={style}>
+    <BlurView 
+      intensity={intensity} 
+      tint={tint} 
+      style={style}
+      blurMethod="dimezisBlurView"
+      blurTarget={blurTarget}
+    >
       {children}
     </BlurView>
   );
@@ -45,6 +52,7 @@ interface LoginScreenProps {
 
 export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   const { theme, toggleTheme } = useApp();
+  const backgroundRef = useRef<View>(null);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [otpCode, setOtpCode] = useState('');
   const [isOtpSent, setIsOtpSent] = useState(false);
@@ -140,30 +148,32 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   return (
     <View style={[styles.container, { backgroundColor: isDark ? '#000F08' : '#F4FFFE' }]}>
       {/* Dynamic Background Gradients */}
-      <LinearGradient
-        colors={colors.bg as any}
-        style={StyleSheet.absoluteFill}
-      />
+      <BlurTargetView ref={backgroundRef} style={StyleSheet.absoluteFill}>
+        <LinearGradient
+          colors={colors.bg as any}
+          style={StyleSheet.absoluteFill}
+        />
 
-      {/* Decorative Blur Orbs */}
-      <View 
-        pointerEvents="none"
-        style={[styles.glowBlob, { 
-          top: '10%', 
-          right: '-10%', 
-          backgroundColor: colors.accentOrange, 
-          opacity: isDark ? 0.15 : 0.1 
-        }]} 
-      />
-      <View 
-        pointerEvents="none"
-        style={[styles.glowBlob, { 
-          bottom: '30%', 
-          left: '-10%', 
-          backgroundColor: colors.electricAqua, 
-          opacity: isDark ? 0.2 : 0.15 
-        }]} 
-      />
+        {/* Decorative Blur Orbs */}
+        <View 
+          pointerEvents="none"
+          style={[styles.glowBlob, { 
+            top: '10%', 
+            right: '-10%', 
+            backgroundColor: colors.accentOrange, 
+            opacity: isDark ? 0.15 : 0.1 
+          }]} 
+        />
+        <View 
+          pointerEvents="none"
+          style={[styles.glowBlob, { 
+            bottom: '30%', 
+            left: '-10%', 
+            backgroundColor: colors.electricAqua, 
+            opacity: isDark ? 0.2 : 0.15 
+          }]} 
+        />
+      </BlurTargetView>
 
       {/* Theme Switcher Button */}
       <TouchableOpacity 
@@ -203,12 +213,17 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
         <Animated.View style={[
           styles.cardContainer,
           {
-            backgroundColor: colors.cardBg,
+            backgroundColor: 'transparent',
             opacity: cardFadeAnim,
             transform: [{ translateY: cardSlideAnim }],
           }
         ]}>
-          <GlassContainer intensity={isDark ? 20 : 40} tint={isDark ? 'dark' : 'light'} style={styles.blurCard}>
+          <GlassContainer
+            intensity={isDark ? 20 : 40}
+            tint={isDark ? 'dark' : 'light'}
+            style={[styles.blurCard, { backgroundColor: colors.cardBg }]}
+            blurTarget={backgroundRef}
+          >
             
             {!isOtpSent ? (
               /* Phone Input Form */
@@ -324,7 +339,12 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
       {/* Custom Cross-Platform Web-Compatible Permission Prompt */}
       {showLocationPrompt && (
         <View style={styles.promptBg}>
-          <GlassContainer intensity={50} tint="dark" style={styles.promptContainer}>
+          <GlassContainer
+            intensity={50}
+            tint="dark"
+            style={[styles.promptContainer, { backgroundColor: colors.cardBg }]}
+            blurTarget={backgroundRef}
+          >
             <View style={styles.promptIconWrapper}>
               <Text style={styles.promptIcon}>📍</Text>
             </View>

@@ -10,7 +10,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { BlurView } from 'expo-blur';
+import { BlurView, BlurTargetView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -22,9 +22,10 @@ interface GlassContainerProps {
   style: any;
   intensity: number;
   tint: 'light' | 'dark';
+  blurTarget?: React.RefObject<any>;
 }
 
-function GlassContainer({ children, style, intensity, tint }: GlassContainerProps) {
+function GlassContainer({ children, style, intensity, tint, blurTarget }: GlassContainerProps) {
   if (Platform.OS === 'web') {
     return (
       <View style={[style, { backdropFilter: `blur(${intensity / 2}px) saturate(180%)`, WebkitBackdropFilter: `blur(${intensity / 2}px) saturate(180%)` }]}>
@@ -33,7 +34,13 @@ function GlassContainer({ children, style, intensity, tint }: GlassContainerProp
     );
   }
   return (
-    <BlurView intensity={intensity} tint={tint} style={style}>
+    <BlurView 
+      intensity={intensity} 
+      tint={tint} 
+      style={style}
+      blurMethod="dimezisBlurView"
+      blurTarget={blurTarget}
+    >
       {children}
     </BlurView>
   );
@@ -48,11 +55,13 @@ export default function SettingsScreen() {
     profilePhoto, 
     setProfilePhoto,
     userPoints,
-    userRank
+    userRank,
+    logout
   } = useApp();
 
   const insets = useSafeAreaInsets();
   const isDark = theme === 'dark';
+  const backgroundRef = React.useRef<View>(null);
 
   const [inputName, setInputName] = useState(userName);
   const [photoUrl, setPhotoUrl] = useState(profilePhoto);
@@ -98,13 +107,15 @@ export default function SettingsScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.bg }]}>
-      <LinearGradient
-        colors={colors.bgGradient as any}
-        style={StyleSheet.absoluteFill}
-      />
-      
-      {/* Background radial glow */}
-      <View pointerEvents="none" style={[styles.glowBlob, { backgroundColor: colors.electricAqua }]} />
+      <BlurTargetView ref={backgroundRef} style={StyleSheet.absoluteFill}>
+        <LinearGradient
+          colors={colors.bgGradient as any}
+          style={StyleSheet.absoluteFill}
+        />
+        
+        {/* Background radial glow */}
+        <View pointerEvents="none" style={[styles.glowBlob, { backgroundColor: colors.electricAqua }]} />
+      </BlurTargetView>
 
       <ScrollView
         contentContainerStyle={[
@@ -130,7 +141,8 @@ export default function SettingsScreen() {
         <GlassContainer
           intensity={isDark ? 20 : 40}
           tint={isDark ? 'dark' : 'light'}
-          style={[styles.settingsCard, { borderColor: colors.cardBorder }]}
+          style={[styles.settingsCard, { borderColor: colors.cardBorder, backgroundColor: colors.cardBg }]}
+          blurTarget={backgroundRef}
         >
           <View style={styles.profileSection}>
             <View style={styles.photoContainer}>
@@ -226,7 +238,8 @@ export default function SettingsScreen() {
         <GlassContainer
           intensity={isDark ? 20 : 40}
           tint={isDark ? 'dark' : 'light'}
-          style={[styles.settingsCard, { borderColor: colors.cardBorder }]}
+          style={[styles.settingsCard, { borderColor: colors.cardBorder, backgroundColor: colors.cardBg }]}
+          blurTarget={backgroundRef}
         >
           {/* Theme Option */}
           <View style={styles.optionRow}>
@@ -253,7 +266,7 @@ export default function SettingsScreen() {
           </View>
 
           {/* Privacy Level Info */}
-          <View style={[styles.optionRow, { borderBottomWidth: 0, paddingBottom: 0 }]}>
+          <View style={styles.optionRow}>
             <View style={styles.optionInfo}>
               <View style={[styles.optionIconContainer, { backgroundColor: 'rgba(16, 185, 129, 0.1)' }]}>
                 <Feather name="shield" size={18} color="#10b981" />
@@ -265,6 +278,30 @@ export default function SettingsScreen() {
                 </Text>
               </View>
             </View>
+          </View>
+
+          {/* Logout Option */}
+          <View style={[styles.optionRow, { borderBottomWidth: 0, paddingBottom: 0 }]}>
+            <View style={styles.optionInfo}>
+              <View style={[styles.optionIconContainer, { backgroundColor: 'rgba(239, 68, 68, 0.1)' }]}>
+                <Feather name="log-out" size={18} color={colors.danger} />
+              </View>
+              <View>
+                <Text style={[styles.optionTitle, { color: colors.text }]}>Sign Out</Text>
+                <Text style={[styles.optionDesc, { color: colors.textSecondary }]}>
+                  Logout from this session
+                </Text>
+              </View>
+            </View>
+            <TouchableOpacity 
+              style={[styles.saveBtnSmall, { backgroundColor: colors.danger }]} 
+              onPress={() => {
+                logout();
+                router.replace('/');
+              }}
+            >
+              <Text style={styles.saveBtnText}>Logout</Text>
+            </TouchableOpacity>
           </View>
         </GlassContainer>
 
