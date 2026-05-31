@@ -201,7 +201,7 @@ export function MapViewer() {
   }, []);
 
   return (
-    <div style={{ height: '600px', minHeight: '600px' }} className="w-full relative rounded-2xl overflow-hidden bg-slate-800">
+    <div className="fixed inset-0 w-screen h-screen z-0 overflow-hidden bg-slate-900">
       <div ref={mapContainer} className="absolute inset-0 w-full h-full" />
     </div>
   );

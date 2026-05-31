@@ -10,24 +10,24 @@ body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   background-color: var(--color-civic-dark);
-  color: #0f172a; /* Dark text for light mode */
+  color: var(--text-primary, #0f172a);
   overflow: hidden;
 }
 
-/* Glassmorphism utilities - Light theme default */
+/* Glassmorphism utilities - Dynamic based on ThemeContext */
 @utility glass {
-  background: rgba(255, 255, 255, 0.4);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  background: rgba(var(--glass-bg-rgb, 255, 255, 255), calc(var(--glass-opacity, 0.4) - 0.2));
+  backdrop-filter: blur(var(--glass-blur, 20px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 20px));
+  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.8));
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
 }
 
 @utility glass-panel {
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.9);
+  background: rgba(var(--glass-bg-rgb, 255, 255, 255), var(--glass-opacity, 0.6));
+  backdrop-filter: blur(calc(var(--glass-blur, 24px) + 4px));
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur, 24px) + 4px));
+  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.9));
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.08);
 }
 

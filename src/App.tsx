@@ -2,6 +2,8 @@ import React from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { LoginScreen } from './pages/LoginScreen';
 import { AdminDashboard } from './pages/AdminDashboard';
+import { AppProvider } from './context/AppContext';
+import { ThemeProvider } from './context/ThemeContext';
 
 // Protected Route wrapper
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -14,20 +16,24 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function App() {
   return (
-    <HashRouter>
-      <Routes>
-        <Route path="/login" element={<LoginScreen />} />
-        <Route 
-          path="/dashboard" 
-          element={
-            <ProtectedRoute>
-              <AdminDashboard />
-            </ProtectedRoute>
-          } 
-        />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
-      </Routes>
-    </HashRouter>
+    <ThemeProvider>
+      <AppProvider>
+        <HashRouter>
+          <Routes>
+            <Route path="/login" element={<LoginScreen />} />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          </Routes>
+        </HashRouter>
+      </AppProvider>
+    </ThemeProvider>
   );
 }
 
