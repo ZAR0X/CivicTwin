@@ -3,145 +3,173 @@ import { useNavigate } from 'react-router-dom';
 import { ShieldAlert, Users, CheckCircle, Clock, LogOut, Map as MapIcon, ListTodo, Settings, LayoutGrid } from 'lucide-react';
 import { AcrylicCard } from '../components/AcrylicCard';
 import { MapViewer } from '../components/MapViewer';
-import { DraggableWidget } from '../components/DraggableWidget';
 import { SettingsPanel } from '../components/SettingsPanel';
 
 export function AdminDashboard() {
   const navigate = useNavigate();
-  const [activeWindows, setActiveWindows] = useState<string[]>(['sidebar', 'stats']);
-  const role = localStorage.getItem('role') || 'Unknown';
-
+  // By default, no center window is open, so just the map is visible in the center space.
+  const [activeWindow, setActiveWindow] = useState<string | null>(null);
+  
   const handleLogout = () => {
     localStorage.removeItem('role');
     navigate('/login');
   };
 
   const toggleWindow = (id: string) => {
-    setActiveWindows(prev => 
-      prev.includes(id) ? prev.filter(w => w !== id) : [...prev, id]
-    );
+    setActiveWindow(prev => prev === id ? null : id);
   };
 
   return (
-    <div className="min-h-screen w-screen bg-slate-900 overflow-hidden font-sans fixed inset-0">
+    <div className="min-h-screen w-screen bg-black overflow-hidden font-sans fixed inset-0">
       {/* Background Map Layer */}
       <MapViewer />
 
-      {/* Floating UI Overlay */}
-      <div className="fixed inset-0 pointer-events-none z-10">
+      {/* Floating UI Overlay - Bento Grid Layout */}
+      <div className="fixed inset-0 pointer-events-none z-10 p-6 flex gap-6">
         
-        {/* Navigation Bar - Top Center */}
-        <DraggableWidget defaultPosition={{ x: window.innerWidth / 2 - 200, y: 20 }}>
-          <AcrylicCard variant="panel" className="h-14 px-6 flex items-center justify-between rounded-full shadow-lg pointer-events-auto w-[400px]">
-            <div className="drag-handle flex items-center gap-3 cursor-grab active:cursor-grabbing flex-1">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-orange-500 to-blue-500 flex items-center justify-center shadow-md">
+        {/* Left Column (320px) */}
+        <div className="w-[300px] flex flex-col gap-6">
+          
+          {/* Header / Brand */}
+          <AcrylicCard variant="panel" className="h-[72px] px-6 flex items-center justify-between rounded-3xl shadow-lg pointer-events-auto">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-blue-400 flex items-center justify-center shadow-md">
                 <ShieldAlert className="w-4 h-4 text-white" />
               </div>
-              <span className="font-bold text-slate-800 dark:text-white tracking-wide">CivicTwin</span>
+              <span className="text-base font-bold text-[var(--text-adaptive)] tracking-wide">CivicTwin</span>
             </div>
-            <div className="flex items-center gap-2">
-              <button onClick={() => toggleWindow('sidebar')} className="p-2 hover:bg-black/10 rounded-full transition-colors text-slate-600 dark:text-slate-300">
-                <LayoutGrid className="w-5 h-5" />
+            <button onClick={handleLogout} className="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors text-red-500">
+              <LogOut className="w-4 h-4" />
+            </button>
+          </AcrylicCard>
+
+          {/* Applications Sidebar */}
+          <AcrylicCard variant="panel" className="flex-1 flex flex-col pointer-events-auto rounded-3xl shadow-xl overflow-hidden">
+            <div className="h-12 bg-black/5 dark:bg-white/5 flex items-center px-6 border-b border-black/5 dark:border-white/10">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-adaptive-dim)]">Applications</span>
+            </div>
+            <div className="p-4 flex flex-col gap-2">
+              <button 
+                onClick={() => setActiveWindow(null)}
+                className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all text-sm font-bold ${
+                  activeWindow === null ? 'bg-blue-500/10 text-blue-500' : 'text-[var(--text-adaptive-muted)] hover:text-[var(--text-adaptive)] hover:bg-black/5 dark:hover:bg-white/5'
+                }`}
+              >
+                <MapIcon className="w-4 h-4" />
+                Live Heatmap
               </button>
-              <button onClick={handleLogout} className="p-2 hover:bg-black/10 rounded-full transition-colors text-red-500">
-                <LogOut className="w-5 h-5" />
+              
+              <button 
+                onClick={() => toggleWindow('tickets')}
+                className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all text-sm font-bold ${
+                  activeWindow === 'tickets' ? 'bg-blue-500/10 text-blue-500' : 'text-[var(--text-adaptive-muted)] hover:text-[var(--text-adaptive)] hover:bg-black/5 dark:hover:bg-white/5'
+                }`}
+              >
+                <ListTodo className="w-4 h-4" />
+                Ticket System
+              </button>
+              
+              <div className="h-px bg-black/5 dark:bg-white/10 my-2" />
+              
+              <button 
+                onClick={() => toggleWindow('settings')}
+                className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all text-sm font-bold ${
+                  activeWindow === 'settings' ? 'bg-blue-500/10 text-blue-500' : 'text-[var(--text-adaptive-muted)] hover:text-[var(--text-adaptive)] hover:bg-black/5 dark:hover:bg-white/5'
+                }`}
+              >
+                <Settings className="w-4 h-4" />
+                Settings
               </button>
             </div>
           </AcrylicCard>
-        </DraggableWidget>
+        </div>
 
-        {/* Floating Sidebar (Tools) */}
-        {activeWindows.includes('sidebar') && (
-          <DraggableWidget defaultPosition={{ x: 30, y: 100 }}>
-            <AcrylicCard variant="panel" className="w-64 flex flex-col pointer-events-auto rounded-3xl shadow-xl overflow-hidden border border-white/20">
-              <div className="drag-handle h-10 bg-black/10 flex items-center px-4 cursor-grab active:cursor-grabbing border-b border-white/10">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Applications</span>
+        {/* Right Column (Flexible space) */}
+        <div className="flex-1 flex flex-col gap-6">
+          
+          {/* Top Row: System Status (Stretches full width of right column) */}
+          <AcrylicCard variant="panel" className="h-[120px] pointer-events-auto rounded-3xl shadow-xl flex flex-col overflow-hidden">
+            <div className="h-10 bg-black/5 dark:bg-white/5 flex items-center px-6 border-b border-black/5 dark:border-white/10">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-adaptive-dim)]">System Status</span>
+            </div>
+            <div className="flex-1 flex items-center justify-around px-4">
+              <div className="flex items-center gap-4 p-2">
+                <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-500/20 flex items-center justify-center">
+                  <ShieldAlert className="w-5 h-5 text-red-600 dark:text-red-400" />
+                </div>
+                <div>
+                  <p className="text-2xl font-black text-[var(--text-adaptive)] leading-none">24</p>
+                  <p className="text-[10px] font-bold uppercase text-[var(--text-adaptive-dim)] mt-1">Critical</p>
+                </div>
               </div>
-              <div className="p-3 flex flex-col gap-2">
-                <button 
-                  className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold text-slate-600 dark:text-slate-300 hover:bg-black/5 border border-transparent`}
-                >
-                  <MapIcon className="w-5 h-5" />
-                  Live Heatmap
-                </button>
-                <button 
-                  onClick={() => toggleWindow('tickets')}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold ${
-                    activeWindows.includes('tickets') ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-white/20' : 'text-slate-600 dark:text-slate-300 hover:bg-black/5 border-transparent'
-                  }`}
-                >
-                  <ListTodo className="w-5 h-5" />
-                  Ticket System
-                </button>
-                
-                <div className="h-px bg-black/10 my-2" />
-                
-                <button 
-                  onClick={() => toggleWindow('settings')}
-                  className="flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold text-slate-600 dark:text-slate-300 hover:bg-black/5"
-                >
-                  <Settings className="w-5 h-5" />
-                  Personalisation
-                </button>
-              </div>
-            </AcrylicCard>
-          </DraggableWidget>
-        )}
+              
+              <div className="w-px h-10 bg-black/5 dark:bg-white/10" />
 
-        {/* Floating Quick Stats */}
-        {activeWindows.includes('stats') && (
-          <DraggableWidget defaultPosition={{ x: window.innerWidth - 300, y: 100 }}>
-            <AcrylicCard variant="panel" className="w-64 flex flex-col pointer-events-auto rounded-3xl shadow-xl overflow-hidden border border-white/20">
-              <div className="drag-handle h-10 bg-black/10 flex items-center px-4 cursor-grab active:cursor-grabbing border-b border-white/10">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-500">System Status</span>
-              </div>
-              <div className="p-4 grid grid-cols-2 gap-4">
-                <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-black/5 hover:bg-black/10 transition-colors">
-                  <ShieldAlert className="w-5 h-5 text-red-500 mb-1" />
-                  <p className="text-xl font-black text-slate-800 dark:text-white">24</p>
-                  <p className="text-[10px] font-bold uppercase text-slate-500">Critical</p>
+              <div className="flex items-center gap-4 p-2">
+                <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-500/20 flex items-center justify-center">
+                  <Clock className="w-5 h-5 text-orange-600 dark:text-orange-400" />
                 </div>
-                <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-black/5 hover:bg-black/10 transition-colors">
-                  <Clock className="w-5 h-5 text-orange-500 mb-1" />
-                  <p className="text-xl font-black text-slate-800 dark:text-white">156</p>
-                  <p className="text-[10px] font-bold uppercase text-slate-500">Pending</p>
-                </div>
-                <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-black/5 hover:bg-black/10 transition-colors">
-                  <CheckCircle className="w-5 h-5 text-green-500 mb-1" />
-                  <p className="text-xl font-black text-slate-800 dark:text-white">89</p>
-                  <p className="text-[10px] font-bold uppercase text-slate-500">Resolved</p>
-                </div>
-                <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-black/5 hover:bg-black/10 transition-colors">
-                  <Users className="w-5 h-5 text-blue-500 mb-1" />
-                  <p className="text-xl font-black text-slate-800 dark:text-white">12</p>
-                  <p className="text-[10px] font-bold uppercase text-slate-500">Depts</p>
+                <div>
+                  <p className="text-2xl font-black text-[var(--text-adaptive)] leading-none">156</p>
+                  <p className="text-[10px] font-bold uppercase text-[var(--text-adaptive-dim)] mt-1">Pending</p>
                 </div>
               </div>
-            </AcrylicCard>
-          </DraggableWidget>
-        )}
 
-        {/* Tickets Window */}
-        {activeWindows.includes('tickets') && (
-          <DraggableWidget defaultPosition={{ x: 350, y: 150 }}>
-            <AcrylicCard variant="panel" className="w-[600px] h-[400px] flex flex-col pointer-events-auto rounded-3xl shadow-2xl overflow-hidden border border-white/20">
-              <div className="drag-handle h-12 bg-black/10 flex items-center justify-between px-4 cursor-grab active:cursor-grabbing border-b border-white/10">
-                <span className="text-sm font-bold text-slate-700 dark:text-slate-200">Ticket Console</span>
-                <button onClick={() => toggleWindow('tickets')} className="w-4 h-4 rounded-full bg-red-400 hover:bg-red-500" />
-              </div>
-              <div className="flex-1 p-6 overflow-y-auto">
-                <div className="text-slate-600 dark:text-slate-400 font-medium">
-                  <p>Ticket table and assignment interface will be implemented here.</p>
+              <div className="w-px h-10 bg-black/5 dark:bg-white/10" />
+
+              <div className="flex items-center gap-4 p-2">
+                <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-500/20 flex items-center justify-center">
+                  <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+                </div>
+                <div>
+                  <p className="text-2xl font-black text-[var(--text-adaptive)] leading-none">89</p>
+                  <p className="text-[10px] font-bold uppercase text-[var(--text-adaptive-dim)] mt-1">Resolved</p>
                 </div>
               </div>
-            </AcrylicCard>
-          </DraggableWidget>
-        )}
 
-        {/* Settings Window */}
-        {activeWindows.includes('settings') && (
-          <SettingsPanel onClose={() => toggleWindow('settings')} />
-        )}
+              <div className="w-px h-10 bg-black/5 dark:bg-white/10" />
+
+              <div className="flex items-center gap-4 p-2">
+                <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center">
+                  <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div>
+                  <p className="text-2xl font-black text-[var(--text-adaptive)] leading-none">12</p>
+                  <p className="text-[10px] font-bold uppercase text-[var(--text-adaptive-dim)] mt-1">Depts</p>
+                </div>
+              </div>
+            </div>
+          </AcrylicCard>
+
+          {/* Main Content Area (Fills remaining space) */}
+          <div className="flex-1 relative">
+            
+            {/* Tickets Window */}
+            {activeWindow === 'tickets' && (
+              <AcrylicCard variant="panel" className="absolute inset-0 pointer-events-auto rounded-3xl shadow-2xl flex flex-col overflow-hidden">
+                <div className="h-14 bg-black/5 dark:bg-white/5 flex items-center justify-between px-6 border-b border-black/5 dark:border-white/10">
+                  <span className="text-sm font-bold text-[var(--text-adaptive)]">Ticket Console</span>
+                  <button onClick={() => setActiveWindow(null)} className="w-6 h-6 flex items-center justify-center rounded-full bg-red-500/20 text-red-500 hover:bg-red-500/30 transition-colors">
+                    <span className="text-xs font-bold leading-none">×</span>
+                  </button>
+                </div>
+                <div className="flex-1 p-8 overflow-y-auto">
+                  <div className="text-base text-[var(--text-adaptive-muted)] font-medium">
+                    <p>Ticket table and assignment interface will be implemented here.</p>
+                  </div>
+                </div>
+              </AcrylicCard>
+            )}
+
+            {/* Settings Window */}
+            {activeWindow === 'settings' && (
+              <div className="absolute inset-0 pointer-events-auto">
+                <SettingsPanel onClose={() => setActiveWindow(null)} />
+              </div>
+            )}
+          </div>
+        </div>
+
       </div>
     </div>
   );

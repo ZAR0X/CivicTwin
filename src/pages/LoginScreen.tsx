@@ -1,12 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, Lock, User, MapPin } from 'lucide-react';
 import { AcrylicCard } from '../components/AcrylicCard';
+import { useTheme } from '../context/ThemeContext';
 
 export function LoginScreen() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
+  const { setForcedTheme } = useTheme();
+
+  useEffect(() => {
+    // Force light mode on login screen regardless of user preference
+    setForcedTheme('light');
+    return () => setForcedTheme(null); // Cleanup on unmount
+  }, [setForcedTheme]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
