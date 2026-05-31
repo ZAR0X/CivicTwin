@@ -4,9 +4,12 @@ import { Shield, Lock, User, MapPin } from 'lucide-react';
 import { AcrylicCard } from '../components/AcrylicCard';
 import { useTheme } from '../context/ThemeContext';
 
+import { supabase } from '../lib/supabase';
+
 export function LoginScreen() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { setForcedTheme } = useTheme();
 
@@ -16,13 +19,32 @@ export function LoginScreen() {
     return () => setForcedTheme(null); // Cleanup on unmount
   }, [setForcedTheme]);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (username === 'superadmin' || username === 'admin') {
-      localStorage.setItem('role', username);
-      navigate('/dashboard');
-    } else {
-      alert('Invalid credentials. Use admin or superadmin');
+    setIsLoading(true);
+
+    try {
+      // Allow raw email or username mapping
+      const email = username.includes('@') ? username : `${username}@civictwin.local`;
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data.session) {
+        // Fetch role if needed, or assume admin for now
+        localStorage.setItem('role', 'admin');
+        navigate('/dashboard');
+      }
+    } catch (err: any) {
+      alert(`Login failed: ${err.message}`);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -79,9 +101,10 @@ export function LoginScreen() {
 
           <button
             type="submit"
-            className="w-full py-3 px-4 border border-white/50 rounded-xl shadow-md text-sm font-bold text-white bg-gradient-to-r from-orange-500 to-blue-600 hover:from-orange-400 hover:to-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 focus:ring-offset-white transition-all"
+            disabled={isLoading}
+            className="w-full py-3 px-4 border border-white/50 rounded-xl shadow-md text-sm font-bold text-white bg-gradient-to-r from-orange-500 to-blue-600 hover:from-orange-400 hover:to-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 focus:ring-offset-white transition-all disabled:opacity-50"
           >
-            Authenticate
+            {isLoading ? 'Authenticating...' : 'Authenticate'}
           </button>
         </form>
 
