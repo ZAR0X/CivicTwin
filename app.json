@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "user-app",
-    "slug": "user-app",
+    "name": "CivicTwin",
+    "slug": "civictwin",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",

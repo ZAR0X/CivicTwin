@@ -6,9 +6,9 @@ import { Report } from "@/context/AppContext";
 import { MOCK_REPORTS } from "@/constants/mapHtml";
 
 // Supabase Credentials
-// Replace these with your project credentials to connect to a live backend!
-export const SUPABASE_URL = ""; 
-export const SUPABASE_ANON_KEY = "";
+// Uses Expo's public env variables
+export const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL || "https://fyhnkunypmznnjawsegm.supabase.co";
+export const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "sb_publishable_uOVTfAb2hiobZJW-qSmMSw_sH4b8YYe";
 
 const isConfigured = SUPABASE_URL.trim() !== "" && SUPABASE_ANON_KEY.trim() !== "";
 
@@ -32,8 +32,8 @@ export const apiService = {
     }
 
     try {
-      // Fetch from the secure anonymous public_reports view (Reporter ID masked)
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/public_reports?select=*&order=created_at.desc`, {
+      // Fetch from tickets table
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/tickets?select=*&order=created_at.desc`, {
         method: "GET",
         headers: getHeaders()
       });
@@ -44,16 +44,16 @@ export const apiService = {
       // Map database columns to app schema
       return data.map((r: any) => ({
         id: r.id,
-        coordinates: [r.longitude, r.latitude],
+        coordinates: [r.lng, r.lat],
         category: r.category,
         severity: r.severity,
         description: r.description,
         image: r.image_url,
         upvotes: r.upvotes,
-        department: r.assigned_department,
+        department: r.department_id, // We'd ideally join with departments to get name, or just display id for now
         status: r.status,
         date: new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-        aiReview: r.ai_description || r.ai_review || 'AI Diagnostics: Complete.',
+        aiReview: r.ai_review || 'AI Diagnostics: Complete.',
         address: r.address || 'Bhopal City'
       }));
     } catch (error) {
@@ -101,19 +101,19 @@ export const apiService = {
 
     try {
       const payload = {
-        latitude: report.latitude,
-        longitude: report.longitude,
+        lat: report.latitude,
+        lng: report.longitude,
         category: report.category,
         severity: report.severity,
         description: report.description,
         image_url: report.imageUrl,
-        assigned_department: report.department,
         status: "Pending",
-        ai_description: report.aiReview,
-        address: report.address
+        ai_review: report.aiReview,
+        address: report.address,
+        // Since we are not doing a proper join, department might need to rely on auto-assign trigger, but we'll try to let trigger do it.
       };
 
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/tickets`, {
         method: "POST",
         headers: getHeaders(reporterToken),
         body: JSON.stringify(payload)
@@ -205,7 +205,7 @@ export const apiService = {
 
     try {
       // 1. Increment report upvotes
-      const upvoteRes = await fetch(`${SUPABASE_URL}/rest/v1/reports?id=eq.${reportId}`, {
+      const upvoteRes = await fetch(`${SUPABASE_URL}/rest/v1/tickets?id=eq.${reportId}`, {
         method: "PATCH",
         headers: getHeaders(userToken),
         body: JSON.stringify({ 

@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { Platform } from 'react-native';
 import { MOCK_REPORTS, BHOPAL_COORDINATES } from '@/constants/mapHtml';
+import { BASE64_IMAGES } from '@/constants/base64Images';
 import { apiService } from '@/services/apiService';
 
 export interface Report {
@@ -95,12 +96,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [profilePhoto, setProfilePhotoState] = useState(() => {
     if (Platform.OS === 'web') {
       try {
-        return localStorage.getItem('civictwin_profile_photo') || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200';
+        return localStorage.getItem('civictwin_profile_photo') || BASE64_IMAGES.avatar1;
       } catch (e) {
-        return 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200';
+        return BASE64_IMAGES.avatar1;
       }
     }
-    return 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200';
+    return BASE64_IMAGES.avatar1;
   });
 
   // Load reports from database or fallback on mount

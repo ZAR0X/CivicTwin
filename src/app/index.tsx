@@ -19,6 +19,7 @@ import { BlurView, BlurTargetView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { getMapHtml, BHOPAL_COORDINATES } from '@/constants/mapHtml';
+import { BASE64_IMAGES } from '@/constants/base64Images';
 import { useApp, Report } from '@/context/AppContext';
 import { router } from 'expo-router';
 import { apiService } from '@/services/apiService';
@@ -291,13 +292,13 @@ export default function HomeScreen() {
   const handleSubmitReport = () => {
     if (!mockedAiResult || !clickCoords) return;
 
-    let categoryImage = 'https://images.unsplash.com/photo-1515162305285-0293e4767cc2?w=500';
+    let categoryImage = BASE64_IMAGES.roads;
     if (mockedAiResult.category === 'Sanitation') {
-      categoryImage = 'https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?w=500';
+      categoryImage = BASE64_IMAGES.sanitation;
     } else if (mockedAiResult.category === 'Utility') {
-      categoryImage = 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=500';
+      categoryImage = BASE64_IMAGES.utility;
     } else if (mockedAiResult.category === 'Water') {
-      categoryImage = 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=500';
+      categoryImage = BASE64_IMAGES.water;
     }
 
     addReport({
@@ -449,7 +450,7 @@ export default function HomeScreen() {
               styles.detailCard, 
               { 
                 backgroundColor: isDark ? 'rgba(0, 15, 8, 0.75)' : 'rgba(255, 255, 255, 0.78)', 
-                borderColor: colors.border 
+                borderColor: colors.border,
               }
             ]}
             blurTarget={mapTargetRef}
@@ -526,8 +527,8 @@ export default function HomeScreen() {
               {/* Horizontal Scroll list of images */}
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.imagesScroll} contentContainerStyle={{ gap: 10 }}>
                 <Image source={{ uri: selectedReport.image }} style={styles.scrollImage} />
-                <Image source={{ uri: 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=500' }} style={styles.scrollImage} />
-                <Image source={{ uri: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=500' }} style={styles.scrollImage} />
+                <Image source={{ uri: BASE64_IMAGES.water }} style={styles.scrollImage} />
+                <Image source={{ uri: BASE64_IMAGES.utility }} style={styles.scrollImage} />
               </ScrollView>
             </ScrollView>
 
@@ -645,7 +646,7 @@ export default function HomeScreen() {
               ) : (
                 <View style={styles.cameraPreviewContainer}>
                   <Image
-                    source={{ uri: 'https://images.unsplash.com/photo-1515162305285-0293e4767cc2?w=500' }}
+                    source={{ uri: BASE64_IMAGES.roads }}
                     style={styles.cameraPreview}
                   />
                   <TouchableOpacity style={styles.retakeBtn} onPress={() => setCameraCaptured(false)}>
@@ -779,10 +780,10 @@ const styles = StyleSheet.create({
   },
   statsOverlay: {
     position: 'absolute',
-    bottom: 152, // Floating above the FAB
+    bottom: 30, // Positioned below the Report Issue button
     left: 0,
     right: 0,
-    zIndex: 10,
+    zIndex: 9,
     alignItems: 'center',
   },
   topOverlay: {
@@ -890,21 +891,25 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   detailOverlay: {
+    flex: 1,
     position: 'absolute',
     top: 0,
     bottom: 0,
     left: 0,
     right: 0,
-    zIndex: 100, // Elevated to sit on top of everything
+    zIndex: 110, // Elevated above all UI
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 15, 8, 0.45)', // Dim overlay behind centered card
     padding: 24,
+    elevation: 9, // Ensure overlay appears above native components on Android
   },
   detailCard: {
     width: '100%',
+    height: '75%',
     maxWidth: 380,
-    borderRadius: 28,
+    maxHeight: 620,
+    borderRadius: 2,
     padding: 24,
     borderWidth: 1,
     shadowColor: '#000000',
@@ -912,8 +917,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 18,
     elevation: 8,
-    maxHeight: height * 0.75,
-    overflow: 'hidden',
+    overflow: 'visible',
     ...Platform.select({
       web: {
         backdropFilter: 'blur(30px) saturate(190%)',

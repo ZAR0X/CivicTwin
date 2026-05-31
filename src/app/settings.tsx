@@ -15,6 +15,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useApp } from '@/context/AppContext';
+import { BASE64_IMAGES } from '@/constants/base64Images';
 import { Fonts } from '@/constants/theme';
 
 // Reusable Glassmorphic container helper matching web backdrop filters
@@ -99,11 +100,11 @@ export default function SettingsScreen() {
 
   // Mock avatar options for easy user choice
   const MOCK_AVATARS = [
-    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200', // Women
-    'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200', // Men
-    'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200', // Women 2
-    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200', // Men 2
-    'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200', // Women 3
+    BASE64_IMAGES.avatar1,
+    BASE64_IMAGES.avatar2,
+    BASE64_IMAGES.avatar3,
+    BASE64_IMAGES.avatar4,
+    BASE64_IMAGES.avatar5,
   ];
 
   return (

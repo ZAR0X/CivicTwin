@@ -473,7 +473,7 @@ const styles = StyleSheet.create({
     paddingTop: 36,
     paddingBottom: Platform.OS === 'ios' ? 44 : 36,
     paddingHorizontal: 28,
-    borderWidth: 1,
+    borderWidth: 0,
     borderColor: 'rgba(255, 255, 255, 0.5)',
   },
   formContainer: {
