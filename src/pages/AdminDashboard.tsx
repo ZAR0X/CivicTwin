@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShieldAlert, Users, CheckCircle, Clock, LogOut, Map as MapIcon, ListTodo, Settings } from 'lucide-react';
 import { AcrylicCard } from '../components/AcrylicCard';
@@ -118,13 +118,13 @@ export function AdminDashboard() {
           </div>
 
           {/* Conditional Rendering based on active tab */}
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 overflow-hidden flex flex-col relative">
             {activeTab === 'map' ? (
-              <AcrylicCard variant="panel" className="h-full w-full p-2 rounded-3xl shadow-sm relative z-0">
+              <AcrylicCard variant="panel" className="flex-1 w-full p-0 md:p-2 rounded-3xl shadow-sm relative z-0 flex flex-col">
                 <MapViewer />
               </AcrylicCard>
             ) : (
-              <AcrylicCard variant="panel" className="h-full w-full p-8 rounded-3xl shadow-sm overflow-y-auto">
+              <AcrylicCard variant="panel" className="flex-1 w-full p-8 rounded-3xl shadow-sm overflow-y-auto flex flex-col">
                 <h2 className="text-2xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-blue-600">Ticket Management Console</h2>
                 <div className="text-slate-600 font-medium">
                   <p>Ticket table and assignment interface will be implemented here.</p>
