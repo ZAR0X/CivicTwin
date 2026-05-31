@@ -6,7 +6,7 @@ import { MOCK_REPORTS, BHOPAL_COORDINATES } from '../data/mockReports';
 export function MapViewer() {
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [_, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (mapRef.current || !mapContainer.current) return;
