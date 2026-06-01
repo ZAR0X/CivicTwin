@@ -1,0 +1,7 @@
+# Supabase
+.temp/
+.branch/
+.env
+
+# Deno
+.deno/
