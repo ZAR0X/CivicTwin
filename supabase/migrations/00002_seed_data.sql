@@ -23,7 +23,7 @@ values
 
 insert into public.tickets (id, reporter_id, department_id, category, severity, description, address, status, image_url, ai_review, location, lat, lng, upvotes)
 values (
-  't0000000-0000-0000-0000-000000000000',
+  'f0000000-0000-0000-0000-000000000000',
   '11111111-1111-1111-1111-111111111111',
   'd1111111-1111-1111-1111-111111111111',
   'Roads',
@@ -41,7 +41,7 @@ values (
 
 insert into public.tickets (id, reporter_id, department_id, category, severity, description, address, status, image_url, ai_review, location, lat, lng, upvotes)
 values (
-  't0000000-0000-0000-0000-000000000001',
+  'f0000000-0000-0000-0000-000000000001',
   '11111111-1111-1111-1111-111111111111',
   'd2222222-2222-2222-2222-222222222222',
   'Sanitation',
@@ -59,7 +59,7 @@ values (
 
 insert into public.tickets (id, reporter_id, department_id, category, severity, description, address, status, image_url, ai_review, location, lat, lng, upvotes)
 values (
-  't0000000-0000-0000-0000-000000000002',
+  'f0000000-0000-0000-0000-000000000002',
   '11111111-1111-1111-1111-111111111111',
   'd3333333-3333-3333-3333-333333333333',
   'Utility',
@@ -77,7 +77,7 @@ values (
 
 insert into public.tickets (id, reporter_id, department_id, category, severity, description, address, status, image_url, ai_review, location, lat, lng, upvotes)
 values (
-  't0000000-0000-0000-0000-000000000003',
+  'f0000000-0000-0000-0000-000000000003',
   '11111111-1111-1111-1111-111111111111',
   'd4444444-4444-4444-4444-444444444444',
   'Water',
@@ -95,7 +95,7 @@ values (
 
 insert into public.tickets (id, reporter_id, department_id, category, severity, description, address, status, image_url, ai_review, location, lat, lng, upvotes)
 values (
-  't0000000-0000-0000-0000-000000000004',
+  'f0000000-0000-0000-0000-000000000004',
   '11111111-1111-1111-1111-111111111111',
   'd1111111-1111-1111-1111-111111111111',
   'Roads',
@@ -113,7 +113,7 @@ values (
 
 insert into public.tickets (id, reporter_id, department_id, category, severity, description, address, status, image_url, ai_review, location, lat, lng, upvotes)
 values (
-  't0000000-0000-0000-0000-000000000005',
+  'f0000000-0000-0000-0000-000000000005',
   '11111111-1111-1111-1111-111111111111',
   'd2222222-2222-2222-2222-222222222222',
   'Sanitation',
@@ -131,7 +131,7 @@ values (
 
 insert into public.tickets (id, reporter_id, department_id, category, severity, description, address, status, image_url, ai_review, location, lat, lng, upvotes)
 values (
-  't0000000-0000-0000-0000-000000000006',
+  'f0000000-0000-0000-0000-000000000006',
   '11111111-1111-1111-1111-111111111111',
   'd3333333-3333-3333-3333-333333333333',
   'Utility',
@@ -149,7 +149,7 @@ values (
 
 insert into public.tickets (id, reporter_id, department_id, category, severity, description, address, status, image_url, ai_review, location, lat, lng, upvotes)
 values (
-  't0000000-0000-0000-0000-000000000007',
+  'f0000000-0000-0000-0000-000000000007',
   '11111111-1111-1111-1111-111111111111',
   'd1111111-1111-1111-1111-111111111111',
   'Roads',
@@ -167,7 +167,7 @@ values (
 
 insert into public.tickets (id, reporter_id, department_id, category, severity, description, address, status, image_url, ai_review, location, lat, lng, upvotes)
 values (
-  't0000000-0000-0000-0000-000000000008',
+  'f0000000-0000-0000-0000-000000000008',
   '11111111-1111-1111-1111-111111111111',
   'd4444444-4444-4444-4444-444444444444',
   'Water',
@@ -185,7 +185,7 @@ values (
 
 insert into public.tickets (id, reporter_id, department_id, category, severity, description, address, status, image_url, ai_review, location, lat, lng, upvotes)
 values (
-  't0000000-0000-0000-0000-000000000009',
+  'f0000000-0000-0000-0000-000000000009',
   '11111111-1111-1111-1111-111111111111',
   'd2222222-2222-2222-2222-222222222222',
   'Sanitation',
@@ -203,7 +203,7 @@ values (
 
 insert into public.tickets (id, reporter_id, department_id, category, severity, description, address, status, image_url, ai_review, location, lat, lng, upvotes)
 values (
-  't0000000-0000-0000-0000-00000000000a',
+  'f0000000-0000-0000-0000-00000000000a',
   '11111111-1111-1111-1111-111111111111',
   'd3333333-3333-3333-3333-333333333333',
   'Utility',
@@ -221,7 +221,7 @@ values (
 
 insert into public.tickets (id, reporter_id, department_id, category, severity, description, address, status, image_url, ai_review, location, lat, lng, upvotes)
 values (
-  't0000000-0000-0000-0000-00000000000b',
+  'f0000000-0000-0000-0000-00000000000b',
   '11111111-1111-1111-1111-111111111111',
   'd1111111-1111-1111-1111-111111111111',
   'Roads',
@@ -239,7 +239,7 @@ values (
 
 insert into public.tickets (id, reporter_id, department_id, category, severity, description, address, status, image_url, ai_review, location, lat, lng, upvotes)
 values (
-  't0000000-0000-0000-0000-00000000000c',
+  'f0000000-0000-0000-0000-00000000000c',
   '11111111-1111-1111-1111-111111111111',
   'd2222222-2222-2222-2222-222222222222',
   'Sanitation',
@@ -257,7 +257,7 @@ values (
 
 insert into public.tickets (id, reporter_id, department_id, category, severity, description, address, status, image_url, ai_review, location, lat, lng, upvotes)
 values (
-  't0000000-0000-0000-0000-00000000000d',
+  'f0000000-0000-0000-0000-00000000000d',
   '11111111-1111-1111-1111-111111111111',
   'd1111111-1111-1111-1111-111111111111',
   'Utility',
@@ -275,7 +275,7 @@ values (
 
 insert into public.tickets (id, reporter_id, department_id, category, severity, description, address, status, image_url, ai_review, location, lat, lng, upvotes)
 values (
-  't0000000-0000-0000-0000-00000000000e',
+  'f0000000-0000-0000-0000-00000000000e',
   '11111111-1111-1111-1111-111111111111',
   'd4444444-4444-4444-4444-444444444444',
   'Water',
@@ -293,7 +293,7 @@ values (
 
 insert into public.tickets (id, reporter_id, department_id, category, severity, description, address, status, image_url, ai_review, location, lat, lng, upvotes)
 values (
-  't0000000-0000-0000-0000-00000000000f',
+  'f0000000-0000-0000-0000-00000000000f',
   '11111111-1111-1111-1111-111111111111',
   'd3333333-3333-3333-3333-333333333333',
   'Utility',
@@ -311,7 +311,7 @@ values (
 
 insert into public.tickets (id, reporter_id, department_id, category, severity, description, address, status, image_url, ai_review, location, lat, lng, upvotes)
 values (
-  't0000000-0000-0000-0000-000000000010',
+  'f0000000-0000-0000-0000-000000000010',
   '11111111-1111-1111-1111-111111111111',
   'd2222222-2222-2222-2222-222222222222',
   'Sanitation',
