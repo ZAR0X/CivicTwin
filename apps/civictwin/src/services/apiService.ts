@@ -7,8 +7,8 @@ import { MOCK_REPORTS } from "@/constants/mapHtml";
 
 // Supabase Credentials
 // Uses Expo's public env variables
-export const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL || "https://fyhnkunypmznnjawsegm.supabase.co";
-export const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "sb_publishable_uOVTfAb2hiobZJW-qSmMSw_sH4b8YYe";
+export const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL || "";
+export const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "";
 
 const isConfigured = SUPABASE_URL.trim() !== "" && SUPABASE_ANON_KEY.trim() !== "";
 
