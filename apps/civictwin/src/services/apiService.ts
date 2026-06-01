@@ -180,7 +180,7 @@ export const apiService = {
 
     try {
       // Call Supabase Deno Edge Function
-      const res = await fetch(`${SUPABASE_URL}/functions/v1/gemini-analysis`, {
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/groq-analysis`, {
         method: "POST",
         headers: getHeaders(),
         body: JSON.stringify({ image: base64Image, description })
