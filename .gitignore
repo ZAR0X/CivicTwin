@@ -31,3 +31,4 @@ supabase/functions/import_map.json
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+project_spec.md
