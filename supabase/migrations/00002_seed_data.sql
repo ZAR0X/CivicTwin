@@ -20,6 +20,7 @@ values
   ('d4444444-4444-4444-4444-444444444444', 'Water Works Dept', 'L1', ST_GeomFromText('POLYGON((77.30 23.10, 77.50 23.10, 77.50 23.30, 77.30 23.30, 77.30 23.10))', 4326));
 
 -- Seed Tickets
+alter table public.tickets disable trigger tr_check_spam_limit;
 
 insert into public.tickets (id, reporter_id, department_id, category, severity, description, address, status, image_url, ai_review, location, lat, lng, upvotes)
 values (
@@ -326,3 +327,5 @@ values (
   77.405,
   45
 );
+
+alter table public.tickets enable trigger tr_check_spam_limit;
